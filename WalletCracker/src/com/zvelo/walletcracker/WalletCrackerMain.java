@@ -1,7 +1,6 @@
 package com.zvelo.walletcracker;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,47 +18,69 @@ public class WalletCrackerMain extends ListActivity {
   // Make strings for logging
   protected final String TAG = this.getClass().getSimpleName();
   protected final String RESTORE = ", can restore state";
-  protected final String PACKAGE_GOOGLE_WALLET = "com.google.android.apps.walletnfcrel";
+  protected final Context context = this;
 
   protected List<Map<String, String>> listData;
-  protected WalletFinder walletFinder;
+  protected BGLoader bGLoader;
   protected TextView empty;
   protected SimpleAdapter listAdapter;
 
-  protected final class WalletFinder extends AsyncTask<Context, Void, Boolean> {
+  protected enum InitStatus {
+   SUCCESS,
+   NO_WALLET,
+   NO_ROOT
+  }
+
+  protected final class BGLoader extends AsyncTask<Void, Void, InitStatus> {
     protected final String TAG = this.getClass().getSimpleName();
 
     // runs on the UI thread
-    @Override protected void onPostExecute(Boolean result) {
+    @Override protected void onPostExecute(InitStatus result) {
       super.onPostExecute(result);
 
-      if (result) {
-        // TODO
+      if (result == InitStatus.SUCCESS) {
+        DeviceInfoParser parser = new DeviceInfoParser(context);
         listData.clear();
-        addToList("Found Google Wallet", PACKAGE_GOOGLE_WALLET);
+        listData.addAll(parser.execute());
         listAdapter.notifyDataSetChanged();
-        Log.d(TAG, "Found wallet app");
       } else {
         listData.clear();
-        empty.setText(getString(R.string.wallet_not_found));
+        if (result == InitStatus.NO_WALLET) {
+          empty.setText(getString(R.string.wallet_not_found));
+          Log.d(TAG, "Could not find wallet app installed");
+        } else if (result == InitStatus.NO_ROOT) {
+          empty.setText(getString(R.string.root_not_found));
+          Log.d(TAG, "Could not gain root");
+        } else {
+          empty.setText(getString(R.string.unknown_init_error));
+          Log.d(TAG, "Unknown initialization error");
+        }
         listAdapter.notifyDataSetChanged();
-        Log.d(TAG, "Could not find wallet app installed");
       }
     }
 
     // runs in its own thread
-    @Override protected Boolean doInBackground(Context... params) {
-      final Context context = params[0];
+    @Override protected InitStatus doInBackground(Void... params) {
       final PackageManager pm = context.getPackageManager();
       List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
 
+      Boolean walletFound = false;
       for (ApplicationInfo packageInfo : packages) {
-        if (packageInfo.packageName.equals(PACKAGE_GOOGLE_WALLET)) {
-          return true;
+        if (packageInfo.packageName.equals(getString(R.string.package_google_wallet))) {
+          walletFound = true;
         }
       }
 
-      return false;
+      if (!walletFound) {
+        return InitStatus.NO_WALLET;
+      } else if (!WalletCopier.canRunRootCommands()) {
+        return InitStatus.NO_ROOT;
+      }
+
+      WalletCopier walletCopier = new WalletCopier(context);
+      walletCopier.execute();
+
+      return InitStatus.SUCCESS;
     }
   }
 
@@ -84,17 +105,10 @@ public class WalletCrackerMain extends ListActivity {
                    R.id.value});
     setListAdapter(listAdapter);
 
-    walletFinder = new WalletFinder();
-    walletFinder.execute(this);
+    bGLoader = new BGLoader();
+    bGLoader.execute();
 
     Log.i(TAG, "onCreate");
-  }
-
-  private void addToList(String title, String value) {
-    Map<String, String> map = new HashMap<String, String>(2);
-    map.put("title", title);
-    map.put("value", value);
-    listData.add(map);
   }
 
   @Override protected void onRestart() {
