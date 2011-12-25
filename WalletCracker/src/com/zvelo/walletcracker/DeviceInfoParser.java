@@ -108,15 +108,16 @@ public class DeviceInfoParser {
     }
 
     if ((salt != null) && (pinHash != null)) {
-      data.add(0, crackPin(salt, pinHash));
+      data.add(0, crackPin(prefix, salt, pinHash));
     }
 
     return data;
   }
 
-  private Map<String, String> crackPin(String salt, String hash) {
+  private Map<String, String> crackPin(String prefix, String salt, String hash) {
     Map<String, String> ret = new HashMap<String, String>(2);
-    ret.put("title", "PIN");
+    final String title = (prefix.equals("") ? "" : prefix + " => ") + "PIN";
+    ret.put("title", title);
 
     for (Integer i = 0; i < 10000; ++i) {
       String pin = String.format("%04d", i);
