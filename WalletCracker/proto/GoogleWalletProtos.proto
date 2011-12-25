@@ -1,0 +1,87 @@
+package zvelo;
+
+option java_package = "com.zvelo.walletcracker";
+option java_outer_classname = "GoogleWalletProtos";
+
+message DeviceInfo {
+  message PinInfo {
+    required int64 salt                       = 1;
+    required bytes pin_hash                   = 2;
+    optional int32 bad_pin_attempts           = 3;
+    optional bool  pin_expired                = 4;
+    optional int64 state_transition_timestamp = 5;
+    optional int64 state_transition_delta_ms  = 6;
+  }
+
+  message c2DmRegInfo {
+    message EntityId {
+      required bytes originator_id     = 1;
+      required bytes local_id          = 2;
+      optional int64 generation_number = 3;
+    }
+
+    message EntityMetadata {
+      enum State {
+        VISIBLE = 0;
+        HIDDEN  = 1;
+      }
+
+      required State state                   = 1;
+      required int64 last_update_time_micros = 2;
+    }
+
+    required EntityId       id                  = 1;
+    optional bytes          registration_id     = 2;
+    required bool           is_registered       = 3;
+    optional EntityMetadata metadata            = 4;
+    required int64          android_id          = 5;
+    required bytes          wallet_package_name = 6;
+  }
+
+  message TsaStatus {
+    enum Number {
+      NOT_PRESENT    = 0;
+      IDLE           = 1;
+      BUSY           = 2;
+      PROVISIONING   = 3;
+      DEPROVISIONING = 4;
+      FACTORY_RESET  = 5;
+      WALLET_RESET   = 6;
+    }
+
+    required Number number        = 1;
+    required int64  updated_at_ms = 2;
+  }
+
+  message PartnerConfig {
+    enum Status {
+      LOCAL = 0;
+      PROXIED = 1;
+    }
+
+    optional bytes  tsm_url_bytes  = 1;
+    optional Status status         = 2;
+    optional bytes  tsm_partner_id = 3;
+    optional bytes  fdc_partner_id = 4;
+  }
+
+  required bytes         wallet_uuid                                   =  1;
+  optional int64         next_local_id                                 =  2;
+  optional PinInfo       pin_info                                      =  3;
+  optional bytes         gaia_account                                  =  4;
+  optional c2DmRegInfo   c2dmreginfo                                   =  5;
+  optional bool          virgin                                        =  6;
+  optional bool          setup_complete                                =  7;
+  optional int32         secure_element_transaction_generation         =  8;
+  optional bytes         cplc_bytes                                    =  9;
+  optional TsaStatus     tsa_status                                    = 10;
+  optional bool          gaia_account_missing                          = 11;
+  optional bool          factory_reset_complete                        = 12;
+  optional bytes         cplc                                          = 13;
+  optional bool          secure_element_initialized                    = 14;
+  optional bool          secure_element_activation_complete            = 15;
+  optional int64         secure_element_activation_timestamp_in_millis = 16;
+  optional int64         setup_completion_time_in_millis               = 17;
+  optional bool          has_synced_instruments_once                   = 18;
+  optional PartnerConfig partner_config                                = 19;
+}
