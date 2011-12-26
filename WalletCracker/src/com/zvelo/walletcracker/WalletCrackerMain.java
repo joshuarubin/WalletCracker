@@ -1,114 +1,117 @@
 package com.zvelo.walletcracker;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
-import android.app.ListActivity;
+import android.app.ActionBar;
+import android.app.ActionBar.Tab;
+import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.view.ViewPager;
+import android.support.v13.app.FragmentPagerAdapter;
 import android.util.Log;
-import android.widget.SimpleAdapter;
-import android.widget.TextView;
 
-public class WalletCrackerMain extends ListActivity {
-  // Make strings for logging
+public class WalletCrackerMain extends Activity {
   protected final String TAG = this.getClass().getSimpleName();
   protected final String RESTORE = ", can restore state";
-  protected final Context context = this;
+  protected ViewPager _pager;
+  protected TabsAdapter _tabsAdapter;
 
-  protected List<Map<String, String>> listData;
-  protected BGLoader bGLoader;
-  protected TextView empty;
-  protected SimpleAdapter listAdapter;
+  public static class TabsAdapter
+    extends FragmentPagerAdapter
+    implements ViewPager.OnPageChangeListener, ActionBar.TabListener
+  {
+    private final Context _context;
+    private final ActionBar _actionBar;
+    private final ViewPager _viewPager;
+    private final ArrayList<TabInfo> _tabs = new ArrayList<TabInfo>();
 
-  protected enum InitStatus {
-   SUCCESS,
-   NO_WALLET,
-   NO_ROOT
-  }
-
-  protected final class BGLoader extends AsyncTask<Void, Void, InitStatus> {
-    protected final String TAG = this.getClass().getSimpleName();
-
-    // runs on the UI thread
-    @Override protected void onPostExecute(InitStatus result) {
-      super.onPostExecute(result);
-
-      if (result == InitStatus.SUCCESS) {
-        DeviceInfoParser parser = new DeviceInfoParser(context);
-        listData.clear();
-        listData.addAll(parser.execute());
-        listAdapter.notifyDataSetChanged();
-      } else {
-        listData.clear();
-        if (result == InitStatus.NO_WALLET) {
-          empty.setText(getString(R.string.wallet_not_found));
-          Log.d(TAG, "Could not find wallet app installed");
-        } else if (result == InitStatus.NO_ROOT) {
-          empty.setText(getString(R.string.root_not_found));
-          Log.d(TAG, "Could not gain root");
-        } else {
-          empty.setText(getString(R.string.unknown_init_error));
-          Log.d(TAG, "Unknown initialization error");
-        }
-        listAdapter.notifyDataSetChanged();
+    static final class TabInfo {
+      private final Class<?> _class;
+      private final Bundle _args;
+  
+      TabInfo(Class<?> clss, Bundle args) {
+        _class = clss;
+        _args = args;
       }
     }
 
-    // runs in its own thread
-    @Override protected InitStatus doInBackground(Void... params) {
-      final PackageManager pm = context.getPackageManager();
-      List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+    public TabsAdapter(Activity activity, ViewPager pager) {
+      super(activity.getFragmentManager());
+      _context = activity;
+      _actionBar = activity.getActionBar();
+      _viewPager = pager;
+      _viewPager.setAdapter(this);
+      _viewPager.setOnPageChangeListener(this);
+    }
 
-      Boolean walletFound = false;
-      for (ApplicationInfo packageInfo : packages) {
-        if (packageInfo.packageName.equals(getString(R.string.package_google_wallet))) {
-          walletFound = true;
+    public void addTab(ActionBar.Tab tab, Class<?> clss, Bundle args) {
+      TabInfo info = new TabInfo(clss, args);
+      tab.setTag(info);
+      tab.setTabListener(this);
+      _tabs.add(info);
+      _actionBar.addTab(tab);
+      notifyDataSetChanged();
+    }
+
+    @Override public int getCount() {
+      return _tabs.size();
+    }
+
+    @Override public Fragment getItem(int position) {
+      TabInfo info = _tabs.get(position);
+      return Fragment.instantiate(_context, info._class.getName(), info._args);
+    }
+
+    @Override public void onTabReselected(Tab tab, FragmentTransaction ft) {
+    }
+
+    @Override public void onTabSelected(Tab tab, FragmentTransaction ft) {
+      Object tag = tab.getTag();
+      for (int i=0; i < _tabs.size(); i++) {
+        if (_tabs.get(i) == tag) {
+          _viewPager.setCurrentItem(i);
         }
       }
+    }
 
-      if (!walletFound) {
-        return InitStatus.NO_WALLET;
-      } else if (!WalletCopier.canRunRootCommands()) {
-        return InitStatus.NO_ROOT;
-      }
+    @Override public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+    }
 
-      WalletCopier walletCopier = new WalletCopier(context);
-      walletCopier.execute();
+    @Override public void onPageScrollStateChanged(int arg0) {
+    }
 
-      return InitStatus.SUCCESS;
+    @Override public void onPageScrolled(int arg0, float arg1, int arg2) {
+    }
+
+    @Override public void onPageSelected(int position) {
+      _actionBar.setSelectedNavigationItem(position);
     }
   }
 
   @Override public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
+    _pager = new ViewPager(this);
+    _pager.setId(R.id.pager);
+    setContentView(_pager);
+
+    final ActionBar actionBar = getActionBar();
+    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+    //actionBar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_HOME);
+    actionBar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
+
+    _tabsAdapter = new TabsAdapter(this, _pager);
+    _tabsAdapter.addTab(actionBar.newTab().setText(R.string.data), DataFragment.class, null);
+    _tabsAdapter.addTab(actionBar.newTab().setText(R.string.about), AboutFragment.class, null);
+
     // savedInstanceState could be null
     if (savedInstanceState != null) {
+      actionBar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
       // TODO
     }
-
-    setContentView(R.layout.main);
-    empty = (TextView) findViewById(android.R.id.empty);
-    empty.setText(getString(R.string.loading));
-
-    listData = new ArrayList<Map<String, String>>();
-
-    listAdapter = new SimpleAdapter(this, listData,
-        R.layout.listitem,
-        new String[] {"title", "value"},
-        new int[] {R.id.title,
-                   R.id.value});
-    setListAdapter(listAdapter);
-
-    bGLoader = new BGLoader();
-    bGLoader.execute();
-
-    Log.i(TAG, "onCreate");
   }
 
   @Override protected void onRestart() {
@@ -143,12 +146,9 @@ public class WalletCrackerMain extends ListActivity {
 
   @Override protected void onSaveInstanceState(Bundle outState) {
     super.onSaveInstanceState(outState);
+    outState.putInt("tab", getActionBar().getSelectedNavigationIndex());
+    // TODO
     Log.i(TAG, "onSaveInstanceState");
-  }
-
-  @Override public Object onRetainNonConfigurationInstance() {
-    Log.i(TAG, "onRetainNonConfigurationInstance");
-    return new Integer(getTaskId());
   }
 
   @Override protected void onRestoreInstanceState(Bundle savedState) {
