@@ -18,14 +18,16 @@ import android.content.Context;
 import android.util.Log;
 
 public class DeviceInfoParser {
-  protected static final String HEX_DIGITS = "0123456789abcdef";
-  protected final String TAG = this.getClass().getSimpleName();
-  protected Context _context;
+  protected final static String HEX_DIGITS = "0123456789abcdef";
+  protected final static String TAG = "DeviceInfoParser";
   protected DeviceInfo _deviceInfo;
-  protected static Map<String, Integer> _pinCache = new HashMap<String, Integer>();
+  protected Context _context;
+  protected List<Map<String, String>> _dataCache;
+  private static Map<String, Integer> _pinCache = new HashMap<String, Integer>();
 
   public DeviceInfoParser(Context context, byte deviceInfoRaw[]) {
     _context = context;
+
     try {
       _deviceInfo = DeviceInfo.parseFrom(deviceInfoRaw);
     } catch (InvalidProtocolBufferException e) {
@@ -33,9 +35,14 @@ public class DeviceInfoParser {
     }
   }
 
-  public List<Map<String, String>> execute() {
-    List<Map<String, String>> data = new ArrayList<Map<String, String>>();
-    data.addAll(addMessage("", _deviceInfo));
+  public List<Map<String, String>> getData() {
+    if (_dataCache != null) {
+      return _dataCache;
+    }
+
+    List<Map<String, String>> data = addMessage("", _deviceInfo);
+
+    _dataCache = data;
     return data;
   }
 
@@ -164,8 +171,8 @@ public class DeviceInfoParser {
   public Integer crackPin() {
     final Long salt = _deviceInfo.getPinInfo().getSalt();
     final String hash = _deviceInfo.getPinInfo().getPinHash().toStringUtf8();
+    final String cacheKey = hash + salt;
 
-    final String cacheKey = hash+salt;
     synchronized(_pinCache) {
       if (_pinCache.containsKey(cacheKey)) {
         Log.d(TAG, "crackPin found cached pin");
@@ -199,7 +206,7 @@ public class DeviceInfoParser {
     synchronized(_pinCache) {
       _pinCache.put(cacheKey, null);
     }
-    Log.d(TAG, "Could not compite PIN");
+    Log.d(TAG, "Could not compute PIN");
     return null;
   }
 

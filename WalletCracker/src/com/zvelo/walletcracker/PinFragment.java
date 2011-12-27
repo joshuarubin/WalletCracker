@@ -22,10 +22,10 @@ public class PinFragment extends Fragment implements WalletListener {
   protected TextView pinValue;
   protected View dataView;
 
-  @Override public void walletLoaded(Status result) {
+  @Override public void walletLoaded(Status result, DeviceInfoParser parser) {
     switch (result) {
       case SUCCESS:
-        showData();
+        showData(parser);
         break;
       case NO_WALLET:
         showError(R.string.wallet_not_found);
@@ -36,37 +36,25 @@ public class PinFragment extends Fragment implements WalletListener {
     }
   }
 
-  @Override public void walletProgress(Progress progress) {
+  @Override public void walletProgress(Progress progress, DeviceInfoParser parser) {
     switch (progress) {
       case LOADING:
         showLoading();
         break;
       case LOADED:
-        showData();
+        showData(parser);
         break;
     }
   }
 
-  private void showData() {
-    WalletDatastoreCopyDbHelper walletDb = null;
-    try {
-      walletDb = new WalletDatastoreCopyDbHelper(getActivity());
-      DeviceInfoParser parser = new DeviceInfoParser(getActivity(), walletDb.getDeviceInfo());
-
-      pinValue.setText(DeviceInfoParser.formatPin(parser.crackPin()));
-      statusView.setVisibility(View.GONE);
-      dataView.setVisibility(View.VISIBLE);
-    } finally {
-      if (walletDb != null) {
-        walletDb.close();
-      }
-    }
+  private void showData(DeviceInfoParser parser) {
+    pinValue.setText(DeviceInfoParser.formatPin(parser.crackPin()));
+    statusView.setVisibility(View.GONE);
+    dataView.setVisibility(View.VISIBLE);
   }
 
   private void showLoading() {
-    statusView.setText(R.string.loading);
-    dataView.setVisibility(View.GONE);
-    statusView.setVisibility(View.VISIBLE);
+    showError(R.string.loading);
   }
   
   private void showError(int stringId) {

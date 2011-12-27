@@ -13,8 +13,11 @@ import android.util.Log;
 public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoader.Status> {
   protected final String TAG = this.getClass().getSimpleName();
   static private Set<WalletListener> _listeners = new HashSet<WalletListener>();
+  static private Boolean _loadLock = false;
   static private Boolean _loading = false;
-  static private Boolean _loaded = false;
+  static private Boolean _initialized = false;
+  static private Boolean _parserLock = false;
+  static private DeviceInfoParser _parser;
 
   public enum Progress {
     LOADING,
@@ -26,12 +29,6 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
     NO_WALLET,
     NO_ROOT,
     PROGRESS_UPDATE_ONLY,
-  }
-
-  static public Boolean loaded() {
-    synchronized(_loaded) {
-      return _loaded;
-    }
   }
 
   static public void addListener(WalletListener listener) {
@@ -46,9 +43,11 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
   @Override protected void onPostExecute(Status result) {
     super.onPostExecute(result);
 
-    synchronized(_listeners) {
-      for (WalletListener listener : _listeners) {
-        listener.walletLoaded(result);
+    synchronized(_parserLock) {
+      synchronized(_listeners) {
+        for (WalletListener listener : _listeners) {
+          listener.walletLoaded(result, _parser);
+        }
       }
     }
 
@@ -56,11 +55,8 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
       return;
     }
 
-    synchronized(_loaded) {
-      _loaded = true;
-    }
-
-    synchronized(_loading) {
+    synchronized(_loadLock) {
+      _initialized = true;
       _loading = false;
     }
   }
@@ -69,9 +65,11 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
   @Override protected void onProgressUpdate(Progress... params) {
     final Progress progress = params[0];
 
-    synchronized(_listeners) {
-      for (WalletListener listener : _listeners) {
-        listener.walletProgress(progress);
+    synchronized(_parserLock) {
+      synchronized(_listeners) {
+        for (WalletListener listener : _listeners) {
+          listener.walletProgress(progress, _parser);
+        }
       }
     }
   }
@@ -92,23 +90,17 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
       force = (Boolean) params[1];
     }
 
-    synchronized(_loading) {
+    synchronized(_loadLock) {
       if (_loading) {
         Log.i(TAG, "Load already in progress");
         publishProgress(Progress.LOADING);
         return Status.PROGRESS_UPDATE_ONLY;
-      }
-    }
-
-    synchronized(_loaded) {
-      if (!force && _loaded) {
-        Log.i(TAG, "Already loaded, force not requested");
+      } else if (!force && _initialized) {
+        Log.i(TAG, "Already initialized, force not requested");
         publishProgress(Progress.LOADED);
         return Status.PROGRESS_UPDATE_ONLY;
       }
-    }
 
-    synchronized(_loading) {
       _loading = true;
     }
 
@@ -133,6 +125,20 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
     }
 
     new WalletCopier(context).execute();
+
+    WalletDatastoreCopyDbHelper walletDb = null;
+    try {
+      // crack the pin in the bg thread so it is cached in the ui thread
+      walletDb = new WalletDatastoreCopyDbHelper(context);
+      synchronized(_parserLock) {
+        _parser = new DeviceInfoParser(context, walletDb.getDeviceInfo());
+        _parser.crackPin();
+      }
+    } finally {
+      if (walletDb != null) {
+        walletDb.close();
+      }
+    }
 
     return Status.SUCCESS;
   }

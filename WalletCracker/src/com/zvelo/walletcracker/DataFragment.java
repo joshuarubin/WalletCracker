@@ -24,21 +24,21 @@ public class DataFragment extends ListFragment implements WalletListener {
   protected SimpleAdapter listAdapter;
   protected List<Map<String, String>> listData;
 
-  @Override public void walletProgress(BGLoader.Progress progress) {
+  @Override public void walletProgress(BGLoader.Progress progress, DeviceInfoParser parser) {
     switch (progress) {
       case LOADING:
         showLoading();
         break;
       case LOADED:
-        showData();
+        showData(parser);
         break;
     }
   }
 
-  @Override public void walletLoaded(BGLoader.Status result) {
+  @Override public void walletLoaded(BGLoader.Status result, DeviceInfoParser parser) {
     switch (result) {
       case SUCCESS:
-        showData();
+        showData(parser);
         break;
       case NO_WALLET:
         showError(R.string.wallet_not_found);
@@ -50,9 +50,7 @@ public class DataFragment extends ListFragment implements WalletListener {
   }
 
   private void showLoading() {
-    statusView.setText(R.string.loading);
-    listData.clear();
-    listAdapter.notifyDataSetChanged();
+    showError(R.string.loading);
   }
 
   private void showError(int stringId) {
@@ -61,19 +59,10 @@ public class DataFragment extends ListFragment implements WalletListener {
     listAdapter.notifyDataSetChanged();
   }
 
-  private void showData() {
-    WalletDatastoreCopyDbHelper walletDb = null;
-    try {
-      walletDb = new WalletDatastoreCopyDbHelper(getActivity());
-      DeviceInfoParser parser = new DeviceInfoParser(getActivity(), walletDb.getDeviceInfo());
-      listData.clear();
-      listData.addAll(parser.execute());
-      listAdapter.notifyDataSetChanged();
-    } finally {
-      if (walletDb != null) {
-        walletDb.close();
-      }
-    }
+  private void showData(DeviceInfoParser parser) {
+    listData.clear();
+    listData.addAll(parser.getData());
+    listAdapter.notifyDataSetChanged();
   }
 
   @Override public void onActivityCreated(Bundle savedInstanceState) {
