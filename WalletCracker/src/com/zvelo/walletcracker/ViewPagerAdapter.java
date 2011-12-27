@@ -31,8 +31,8 @@ public class ViewPagerAdapter extends FragmentPagerAdapter implements TitleProvi
     _context = activity;
   }
 
-  public void addTab(String title, Class<?> clss, Bundle args) {
-    TabInfo info = new TabInfo(title, clss, args);
+  public void addTab(int titleId, Class<?> clss, Bundle args) {
+    TabInfo info = new TabInfo(_context.getString(titleId), clss, args);
     _tabs.add(info);
   }
 

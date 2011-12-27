@@ -19,13 +19,17 @@ public class WalletCrackerMain extends Activity {
     getActionBar().setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
 
     ViewPagerAdapter adapter = new ViewPagerAdapter(this);
-    adapter.addTab(getString(R.string.data), DataFragment.class, null);
-    adapter.addTab(getString(R.string.about), AboutFragment.class, null);
+    adapter.addTab(R.string.pin,   PinFragment.class,   null);
+    adapter.addTab(R.string.data,  DataFragment.class,  null);
+    adapter.addTab(R.string.about, AboutFragment.class, null);
 
     ViewPager pager = (ViewPager) findViewById(R.id.pager);
     TitlePageIndicator indicator = (TitlePageIndicator) findViewById(R.id.titles);
     pager.setAdapter(adapter);
     indicator.setViewPager(pager);
+
+    Log.i(TAG, "WalletCrackerMain rebuild");
+    new BGLoader().execute(this, false);
 
     // savedInstanceState could be null
     if (savedInstanceState != null) {

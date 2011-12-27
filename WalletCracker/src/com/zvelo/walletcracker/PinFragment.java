@@ -1,10 +1,9 @@
 package com.zvelo.walletcracker;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import com.zvelo.walletcracker.BGLoader.Progress;
+import com.zvelo.walletcracker.BGLoader.Status;
 
-import android.app.ListFragment;
+import android.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,29 +12,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-public class DataFragment extends ListFragment implements WalletListener {
+public class PinFragment extends Fragment implements WalletListener {
   protected final String TAG = this.getClass().getSimpleName();
   protected final String RESTORE = ", can restore state";
 
   protected TextView statusView;
-  protected SimpleAdapter listAdapter;
-  protected List<Map<String, String>> listData;
+  protected TextView pinValue;
+  protected View dataView;
 
-  @Override public void walletProgress(BGLoader.Progress progress) {
-    switch (progress) {
-      case LOADING:
-        showLoading();
-        break;
-      case LOADED:
-        showData();
-        break;
-    }
-  }
-
-  @Override public void walletLoaded(BGLoader.Status result) {
+  @Override public void walletLoaded(Status result) {
     switch (result) {
       case SUCCESS:
         showData();
@@ -49,16 +36,15 @@ public class DataFragment extends ListFragment implements WalletListener {
     }
   }
 
-  private void showLoading() {
-    statusView.setText(R.string.loading);
-    listData.clear();
-    listAdapter.notifyDataSetChanged();
-  }
-
-  private void showError(int stringId) {
-    statusView.setText(stringId);
-    listData.clear();
-    listAdapter.notifyDataSetChanged();
+  @Override public void walletProgress(Progress progress) {
+    switch (progress) {
+      case LOADING:
+        showLoading();
+        break;
+      case LOADED:
+        showData();
+        break;
+    }
   }
 
   private void showData() {
@@ -66,14 +52,27 @@ public class DataFragment extends ListFragment implements WalletListener {
     try {
       walletDb = new WalletDatastoreCopyDbHelper(getActivity());
       DeviceInfoParser parser = new DeviceInfoParser(getActivity(), walletDb.getDeviceInfo());
-      listData.clear();
-      listData.addAll(parser.execute());
-      listAdapter.notifyDataSetChanged();
+
+      pinValue.setText(DeviceInfoParser.formatPin(parser.crackPin()));
+      statusView.setVisibility(View.GONE);
+      dataView.setVisibility(View.VISIBLE);
     } finally {
       if (walletDb != null) {
         walletDb.close();
       }
     }
+  }
+
+  private void showLoading() {
+    statusView.setText(R.string.loading);
+    dataView.setVisibility(View.GONE);
+    statusView.setVisibility(View.VISIBLE);
+  }
+  
+  private void showError(int stringId) {
+    statusView.setText(stringId);
+    dataView.setVisibility(View.GONE);
+    statusView.setVisibility(View.VISIBLE);
   }
 
   @Override public void onActivityCreated(Bundle savedInstanceState) {
@@ -84,36 +83,29 @@ public class DataFragment extends ListFragment implements WalletListener {
       // TODO
     }
 
-    statusView = (TextView) getActivity().findViewById(android.R.id.empty);
-    listData = new ArrayList<Map<String, String>>();
-    listAdapter = new SimpleAdapter(
-        getActivity(),
-        listData,
-        R.layout.datalistitem,
-        new String[] {"title", "value"},
-        new int[] {R.id.title,
-                   R.id.value});
-    setListAdapter(listAdapter);
-    setHasOptionsMenu(true);
+    pinValue = (TextView) getActivity().findViewById(R.id.pinValue);
+    statusView = (TextView) getActivity().findViewById(R.id.pinStatus);
+    dataView = getActivity().findViewById(R.id.pinData);
 
+    setHasOptionsMenu(true);
     rebuild(false);
 
     Log.i(TAG, "onActivityCreated");
   }
 
+  public void rebuild(Boolean force) {
+    showLoading();
+    Log.i(TAG, "PinFragment rebuild");
+    new BGLoader().execute(this, getActivity(), force);
+  }
+
   @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    return inflater.inflate(R.layout.datalist, container, false);
+    return inflater.inflate(R.layout.pin, container, false);
   }
 
   @Override public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
     Log.i(TAG, "onCreateOptionsMenu");
-    inflater.inflate(R.menu.datamenu, menu);
-  }
-
-  public void rebuild(Boolean force) {
-    showLoading();
-    Log.i(TAG, "DataFragment rebuild");
-    new BGLoader().execute(this, getActivity(), force);
+    inflater.inflate(R.menu.pinmenu, menu);
   }
 
   @Override public boolean onOptionsItemSelected(MenuItem item) {

@@ -21,32 +21,21 @@ public class DeviceInfoParser {
   protected static final String HEX_DIGITS = "0123456789abcdef";
   protected final String TAG = this.getClass().getSimpleName();
   protected Context _context;
+  protected DeviceInfo _deviceInfo;
+  protected static Map<String, Integer> _pinCache = new HashMap<String, Integer>();
 
-  public DeviceInfoParser(Context context) {
+  public DeviceInfoParser(Context context, byte deviceInfoRaw[]) {
     _context = context;
+    try {
+      _deviceInfo = DeviceInfo.parseFrom(deviceInfoRaw);
+    } catch (InvalidProtocolBufferException e) {
+      Log.e(TAG, "Error parsing: " + e.getMessage());
+    }
   }
 
   public List<Map<String, String>> execute() {
-    WalletDatastoreCopyDbHelper db = null;
-    try {
-      db = new WalletDatastoreCopyDbHelper(_context);
-      final byte deviceInfoRaw[] = db.getDeviceInfo();
-      DeviceInfo deviceInfo = DeviceInfo.parseFrom(deviceInfoRaw);
-      return parse(deviceInfo);
-    } catch (InvalidProtocolBufferException e) {
-      Log.e(TAG, "Error parsing: " + e.getMessage());
-    } finally {
-      if (db != null) {
-        db.close();
-      }
-    }
-
-    return null;
-  }
-
-  private List<Map<String, String>> parse(DeviceInfo deviceInfo) {
     List<Map<String, String>> data = new ArrayList<Map<String, String>>();
-    data.addAll(addMessage("", deviceInfo));
+    data.addAll(addMessage("", _deviceInfo));
     return data;
   }
 
@@ -118,20 +107,13 @@ public class DeviceInfoParser {
     Log.d(TAG, "unknown field: "+fieldName);
     return fieldName;
   }
-  
+
   private List<Map<String, String>>addMessage(String prefix, Message message) {
     List<Map<String, String>> data = new ArrayList<Map<String, String>>();
-
-    String salt = null, pinHash = null;
 
     for (Map.Entry<FieldDescriptor, Object> entry : message.getAllFields().entrySet()) {
       final String fieldName = entry.getKey().getName();
       final String decoded = decodeFieldName(fieldName);
-      if (decoded == null) {
-        Log.d(TAG, "could not decode: "+fieldName);
-        continue;
-      }
-
       final String title = (prefix.equals("") ? "" : prefix + " => ") + decoded;
 
       Map<String, String> ret = new HashMap<String, String>(2);
@@ -157,10 +139,6 @@ public class DeviceInfoParser {
           case BOOLEAN:
           case STRING:
             value = entry.getValue().toString();
-            if (fieldName.equals("salt")) {
-              salt = value;
-            }
-
             ret.put("value", value);
             data.add(ret);
             break;
@@ -170,9 +148,6 @@ public class DeviceInfoParser {
             break;
           case BYTE_STRING:
             value = ((ByteString) entry.getValue()).toStringUtf8();
-            if (fieldName.equals("pin_hash")) {
-              pinHash = value;
-            }
             ret.put("value", value);
             data.add(ret);
             break;
@@ -183,22 +158,26 @@ public class DeviceInfoParser {
       }
     }
 
-    if ((salt != null) && (pinHash != null)) {
-      data.add(0, crackPin(prefix, salt, pinHash));
-    }
-
     return data;
   }
 
-  private Map<String, String> crackPin(String prefix, String salt, String hash) {
-    Map<String, String> ret = new HashMap<String, String>(2);
-    final String title = (prefix.equals("") ? "" : prefix + " => ") + _context.getString(R.string.pin);
-    ret.put("title", title);
+  public Integer crackPin() {
+    final Long salt = _deviceInfo.getPinInfo().getSalt();
+    final String hash = _deviceInfo.getPinInfo().getPinHash().toStringUtf8();
 
-    for (Integer i = 0; i < 10000; ++i) {
-      String pin = String.format("%04d", i);
+    final String cacheKey = hash+salt;
+    synchronized(_pinCache) {
+      if (_pinCache.containsKey(cacheKey)) {
+        Log.d(TAG, "crackPin found cached pin");
+        return _pinCache.get(cacheKey);
+      }
+    }
+
+    Log.d(TAG, "crackPin calculating pin...");
+
+    for (Integer pin = 0; pin < 10000; ++pin) {
       try {
-        byte calc[] = MessageDigest.getInstance("SHA256").digest((i.toString()+salt).getBytes());
+        byte calc[] = MessageDigest.getInstance("SHA256").digest((pin.toString()+salt).getBytes());
 
         StringBuffer hex = new StringBuffer();
         for (final byte b : calc) {
@@ -207,16 +186,24 @@ public class DeviceInfoParser {
 
         String calcHash = hex.toString();
         if (calcHash.toLowerCase().equals(hash.toLowerCase())) {
-          ret.put("value", pin.toString());
-          return ret;
+          synchronized(_pinCache) {
+            _pinCache.put(cacheKey, pin);
+          }
+          return pin;
         }
       } catch (NoSuchAlgorithmException e) {
         Log.e(TAG, "no such algorithm");
       }
     }
 
-    ret.put("value", "Could not compute PIN");
-    return ret;
+    synchronized(_pinCache) {
+      _pinCache.put(cacheKey, null);
+    }
+    Log.d(TAG, "Could not compite PIN");
+    return null;
   }
 
+  static public String formatPin(Integer pin) {
+    return String.format("%04d", pin);
+  }
 }

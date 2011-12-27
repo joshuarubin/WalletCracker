@@ -1,5 +1,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/rebuild"
           android:title="@string/rebuild" android:showAsAction="never"/>
-    <item android:id="@+id/prefs" android:title="@string/prefs" android:showAsAction="never"></item>
 </menu>

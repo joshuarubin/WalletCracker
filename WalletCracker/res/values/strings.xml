@@ -46,6 +46,9 @@
   <string name="pin">PIN</string>
   <string name="data">DATA</string>
   <string name="about">ABOUT</string>
-  <string name="reload">Reload</string>
+  <string name="rebuild">Rebuild</string>
   <string name="prefs">Preferences</string>
+  <string name="author_label">Author: </string>
+  <string name="author">Joshua Rubin</string>
+  <string name="your_pin_is">Your Google Wallet PIN Is:</string>
 </resources>
