@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-  <string name="app_name">zvelo Google Wallet Cracker</string>
+  <string name="app_name">Wallet Cracker</string>
   <string name="wallet_not_found">Google Wallet does not appear to be installed on your device</string>
   <string name="loading">Loading...</string>
   <string name="error">Error</string>
@@ -44,8 +44,8 @@
   <string name="state_transition_timestamp">State Transition Time</string>
   <string name="state_transition_delta_ms">State Transition Change in Time</string>
   <string name="pin">PIN</string>
-  <string name="data">Data</string>
-  <string name="about">About</string>
+  <string name="data">DATA</string>
+  <string name="about">ABOUT</string>
   <string name="reload">Reload</string>
   <string name="prefs">Preferences</string>
 </resources>
