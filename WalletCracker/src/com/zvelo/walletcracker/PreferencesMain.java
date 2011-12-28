@@ -45,6 +45,16 @@ public class PreferencesMain extends PreferenceActivity implements OnSharedPrefe
     }
   }
 
+  @Override protected void onResume() {
+    super.onResume();
+    Log.i(TAG, "onResume");
+  }
+
+  @Override protected void onPause() {
+    super.onPause();
+    Log.i(TAG, "onPause" + (isFinishing() ? "Finishing" : ""));
+  }
+
   private void rebuild(Boolean force) {
     Log.i(TAG, "rebuild, force: "+force);
     new BGLoader().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, force);

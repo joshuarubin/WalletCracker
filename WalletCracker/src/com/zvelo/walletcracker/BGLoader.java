@@ -87,19 +87,8 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
 
   // runs in its own thread
   @Override protected Status doInBackground(Object... params) {
-    WalletListener listener = null;
-    Context context = null;
-    Boolean force = null;
-
-    try {
-      listener = (WalletListener) params[0];
-      context = (Context) params[1];
-      force = (Boolean) params[2];
-      addListener(listener);
-    } catch (ClassCastException e) {
-      context = (Context) params[0];
-      force = (Boolean) params[1];
-    }
+    Context context = (Context) params[0];
+    Boolean force = (Boolean) params[1];
 
     synchronized(_loadLock) {
       if (_loading) {

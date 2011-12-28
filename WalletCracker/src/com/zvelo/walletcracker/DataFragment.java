@@ -74,6 +74,18 @@ public class DataFragment extends ListFragment implements WalletListener {
   public void rebuild(Boolean force) {
     clear();
     Log.i(TAG, "rebuild, force: "+force);
-    new BGLoader().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, getActivity(), force);
+    new BGLoader().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, getActivity(), force);
+  }
+
+  @Override public void onPause() {
+    super.onPause();
+    Log.i(TAG, "onPause" + (getActivity().isFinishing() ? "Finishing" : ""));
+    BGLoader.removeListener(this);
+  }
+
+  @Override public void onResume() {
+    super.onResume();
+    Log.i(TAG, "onResume");
+    BGLoader.addListener(this);
   }
 }

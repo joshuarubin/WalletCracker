@@ -1,13 +1,16 @@
 package com.zvelo.walletcracker;
 
+import com.google.android.apps.analytics.easytracking.TrackedActivity;
 import com.viewpagerindicator.TitlePageIndicator;
 import com.zvelo.walletcracker.BGLoader.Progress;
 import com.zvelo.walletcracker.BGLoader.Status;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -18,18 +21,109 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-public class WalletCrackerMain extends Activity implements WalletListener {
+public class WalletCrackerMain extends TrackedActivity implements WalletListener {
   protected final String TAG = this.getClass().getSimpleName();
   protected final String RESTORE = ", can restore state";
-  protected ProgressDialog _progress;
+  static private Boolean _progressLock = false;
+  static private ProgressDialogFragment _progress;
+
+
+  public static class ProgressDialogFragment extends DialogFragment {
+    static public final String TAG = "ProgressDialogFragment";
+
+    public static ProgressDialogFragment newInstance(Integer messageId, Integer progress, Integer numSteps) {
+      ProgressDialogFragment fragment = new ProgressDialogFragment();
+
+      Bundle args = new Bundle();
+      args.putInt("messageId", messageId);
+      args.putInt("progress", progress);
+      args.putInt("numSteps", numSteps);
+      fragment.setArguments(args);
+
+      return fragment;
+    }
+
+    @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
+      final Integer messageId = getArguments().getInt("messageId");
+      final Integer progress = getArguments().getInt("progress");
+      final Integer numSteps = getArguments().getInt("numSteps");
+
+      ZveloProgressDialog dialog = new ZveloProgressDialog(getActivity());
+
+      dialog.setTitle(R.string.loading);
+      dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+      dialog.setCancelable(false);
+      dialog.update(messageId, progress, numSteps);
+
+      return (Dialog) dialog;
+    }
+
+    public void update(Integer messageId, Integer progress, Integer numSteps) {
+      ZveloProgressDialog dialog = (ZveloProgressDialog) getDialog();
+      if (dialog == null) {
+        return;
+      }
+      dialog.update(messageId, progress, numSteps);
+    }
+  }
+
+  static public class ZveloProgressDialog extends ProgressDialog {
+    public ZveloProgressDialog(Context context) {
+      super(context);
+    }
+
+    public void update(Integer messageId, Integer progress, Integer numSteps) {
+      if (messageId != null) {
+        setMessage(getContext().getString(messageId));
+      }
+
+      if ((progress == null) || (numSteps == null) || (numSteps == 0)) {
+        setIndeterminate(true);
+      } else {
+        setIndeterminate(false);
+        setMax(numSteps);
+        setProgress(progress);
+      }
+    }
+  }
+
+  static public class ErrorDialogFragment extends DialogFragment {
+    static public final String TAG = "ErrorDialogFragment";
+
+    public static ErrorDialogFragment newInstance(int messageId) {
+      ErrorDialogFragment fragment = new ErrorDialogFragment();
+
+      Bundle args = new Bundle();
+      args.putInt("messageId", messageId);
+      fragment.setArguments(args);
+
+      return fragment;
+    }
+
+    @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
+      final int messageId = getArguments().getInt("messageId");
+
+      return new AlertDialog.Builder(getActivity())
+              .setTitle(R.string.error)
+              .setMessage(messageId)
+              .setCancelable(false)
+              .setNeutralButton(R.string.error_dialog_ok, new DialogInterface.OnClickListener() {
+                @Override public void onClick(DialogInterface dialog, int which) {
+                  ((WalletCrackerMain) getActivity()).doErrorClick();
+                }
+              })
+              .create();
+    }
+  }
+
+  public void doErrorClick() {
+    Log.i(TAG, "Error Clicked");
+    this.finish();
+  }
 
   @Override public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.pager);
-
-    _progress = new ProgressDialog(this);
-    _progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-    _progress.setCancelable(false);
 
     getActionBar().setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
 
@@ -64,11 +158,13 @@ public class WalletCrackerMain extends Activity implements WalletListener {
   @Override protected void onResume() {
     super.onResume();
     Log.i(TAG, "onResume");
+    BGLoader.addListener(this);
   }
 
   @Override protected void onPause() {
     super.onPause();
     Log.i(TAG, "onPause" + (isFinishing() ? "Finishing" : ""));
+    BGLoader.removeListener(this);
   }
 
   @Override protected void onStop() {
@@ -141,43 +237,42 @@ public class WalletCrackerMain extends Activity implements WalletListener {
 
   private void rebuild(Boolean force) {
     Log.i(TAG, "rebuild, force: "+force);
-    new BGLoader().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, this, force);
+    new BGLoader().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, force);
   }
 
-  public void showError(int stringId) {
-    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    builder.setMessage(stringId)
-           .setCancelable(false)
-           .setNeutralButton("OK", new DialogInterface.OnClickListener() {
-              @Override public void onClick(DialogInterface dialog, int which) {
-                WalletCrackerMain.this.finish();
-              }
-          })
-          .show();
+  private void showError(int messageId) {
+    DialogFragment fragment = ErrorDialogFragment.newInstance(messageId);
+    fragment.show(getFragmentManager(), "error");
   }
 
-  private void showProgress(Integer stringId, Integer progress, Integer numSteps) {
-    if (stringId != null) {
-      _progress.setMessage(getString(stringId));
+  private void showProgress(Integer messageId, Integer progress, Integer numSteps) {
+    synchronized(_progressLock) {
+      if (_progressLock) {
+        Log.d(TAG, "updating existing progress dialog");
+        _progress.update(messageId, progress, numSteps);
+        return;
+      }
+
+      _progressLock = true;
+
+      Log.d(TAG, "creating new progress dialog");
+      _progress = ProgressDialogFragment.newInstance(messageId, progress, numSteps);
+      _progress.show(getFragmentManager(), ProgressDialogFragment.TAG);
     }
-
-    if ((progress == null) || (numSteps == null) || (numSteps == 0)) {
-      _progress.setIndeterminate(true);
-    } else {
-      _progress.setIndeterminate(false);
-      _progress.setMax(numSteps);
-      _progress.setProgress(progress);
-    }
-
-    _progress.show();
   }
 
-  private void hideProgress() {
-    _progress.hide();
+  private void hideDialog(String tag) {
+    synchronized(_progressLock) {
+      if (_progressLock) {
+        Log.d(TAG, "dismissing "+tag);
+        _progress.dismiss();
+        _progressLock = false;
+      }
+    }
   }
 
   @Override  public void walletLoaded(Status result, DeviceInfoParser parser) {
-    hideProgress();
+    hideDialog(ProgressDialogFragment.TAG);
 
     switch (result) {
       case NO_WALLET:
