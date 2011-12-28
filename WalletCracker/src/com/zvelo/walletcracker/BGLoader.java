@@ -21,11 +21,10 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
 
   public enum Progress {
     LOADING,
-    LOADING_WALLET,
-    LOADING_ROOT,
-    LOADING_COPYING,
-    LOADING_CRACKING,
-    LOADED,
+    WALLET,
+    ROOT,
+    COPYING,
+    CRACKING,
   }
 
   public enum Status {
@@ -54,6 +53,10 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
   @Override protected void onPostExecute(Status result) {
     super.onPostExecute(result);
 
+    if (result == Status.PROGRESS_UPDATE_ONLY) {
+      return;
+    }
+
     synchronized(_parserLock) {
       if ((result != Status.SUCCESS) || (_parser != null)) {
         synchronized(_listeners) {
@@ -62,10 +65,6 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
           }
         }
       }
-    }
-
-    if (result == Status.PROGRESS_UPDATE_ONLY) {
-      return;
     }
 
     synchronized(_loadLock) {
@@ -78,12 +77,10 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
   @Override protected void onProgressUpdate(Progress... params) {
     final Progress progress = params[0];
 
-    synchronized(_parserLock) {
-      synchronized(_listeners) {
-        Log.i(TAG, "publishing progress "+progress.toString()+" to "+_listeners.size()+" listeners");
-        for (WalletListener listener : _listeners) {
-          listener.walletProgress(progress, Progress.values().length, _parser);
-        }
+    synchronized(_listeners) {
+      Log.i(TAG, "publishing progress "+progress.toString()+" to "+_listeners.size()+" listeners");
+      for (WalletListener listener : _listeners) {
+        listener.walletProgress(progress, Progress.values().length);
       }
     }
   }
@@ -111,8 +108,7 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
         return Status.PROGRESS_UPDATE_ONLY;
       } else if (!force && _initialized) {
         Log.i(TAG, "Already initialized, force not requested");
-        publishProgress(Progress.LOADED);
-        return Status.PROGRESS_UPDATE_ONLY;
+        return Status.SUCCESS;
       }
 
       _loading = true;
@@ -123,7 +119,7 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
     final PackageManager pm = context.getPackageManager();
     List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
 
-    publishProgress(Progress.LOADING_WALLET);
+    publishProgress(Progress.WALLET);
 
     Boolean walletFound = false;
     for (ApplicationInfo packageInfo : packages) {
@@ -137,17 +133,17 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
       return Status.NO_WALLET;
     }
 
-    publishProgress(Progress.LOADING_ROOT);
+    publishProgress(Progress.ROOT);
 
     if (!WalletCopier.canRunRootCommands()) {
       Log.i(TAG, "Could not gain root");
       return Status.NO_ROOT;
     }
 
-    publishProgress(Progress.LOADING_COPYING);
+    publishProgress(Progress.COPYING);
     new WalletCopier(context).execute();
 
-    publishProgress(Progress.LOADING_CRACKING);
+    publishProgress(Progress.CRACKING);
     WalletDatastoreCopyDbHelper walletDb = null;
     try {
       // crack the pin in the bg thread so it is cached in the ui thread

@@ -22,21 +22,13 @@ public class DataFragment extends ListFragment implements WalletListener {
   protected SimpleAdapter listAdapter;
   protected List<Map<String, String>> listData;
 
-  @Override public void walletProgress(BGLoader.Progress progress, Integer numSteps, DeviceInfoParser parser) {
-    switch (progress) {
-      case LOADED:
-        showData(parser);
-        break;
-      default:
-        clear();
-    }
+  @Override public void walletProgress(BGLoader.Progress progress, Integer numSteps) {
+    clear();
   }
 
   @Override public void walletLoaded(BGLoader.Status result, DeviceInfoParser parser) {
-    switch (result) {
-      case SUCCESS:
-        showData(parser);
-        break;
+    if (result == BGLoader.Status.SUCCESS) {
+      showData(parser);
     }
   }
 

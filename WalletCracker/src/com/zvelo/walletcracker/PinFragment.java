@@ -19,21 +19,15 @@ public class PinFragment extends Fragment implements WalletListener {
   protected TextView pinValue;
   protected View dataView;
 
-  @Override public void walletProgress(Progress progress, Integer numSteps, DeviceInfoParser parser) {
-    switch (progress) {
-      case LOADED:
-        showData(parser);
-        break;
-      default:
-        clear();
-    }
+  @Override public void walletProgress(Progress progress, Integer numSteps) {
+    Log.i(TAG, "got progress: "+progress.toString());
+    clear();
   }
 
   @Override public void walletLoaded(Status result, DeviceInfoParser parser) {
-    switch (result) {
-      case SUCCESS:
-        showData(parser);
-        break;
+    Log.i(TAG, "got loaded: "+result.toString());
+    if (result == BGLoader.Status.SUCCESS) {
+      showData(parser);
     }
   }
 

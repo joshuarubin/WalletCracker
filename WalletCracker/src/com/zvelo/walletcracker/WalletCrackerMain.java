@@ -189,27 +189,24 @@ public class WalletCrackerMain extends Activity implements WalletListener {
     }
   }
 
-  @Override public void walletProgress(Progress progress, Integer numSteps, DeviceInfoParser parser) {
+  @Override public void walletProgress(Progress progress, Integer numSteps) {
     int stringId = R.string.loading;
 
     switch (progress) {
-      case LOADING_COPYING:
-        stringId = R.string.loading_copying;
-        break;
-      case LOADING_CRACKING:
-        stringId = R.string.loading_cracking;
-        break;
-      case LOADING_WALLET:
+      case WALLET:
         stringId = R.string.loading_wallet;
         break;
-      case LOADING_ROOT:
+      case ROOT:
         stringId = R.string.loading_root;
         break;
-      case LOADED:
-        stringId = R.string.loaded;
+      case COPYING:
+        stringId = R.string.loading_copying;
+        break;
+      case CRACKING:
+        stringId = R.string.loading_cracking;
         break;
     }
 
-    showProgress(stringId, ((progress == null) ? null : progress.ordinal()+1), numSteps);
+    showProgress(stringId, ((progress == null) ? null : progress.ordinal()), numSteps);
   }
 }
