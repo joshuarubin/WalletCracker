@@ -7,6 +7,7 @@ import com.zvelo.walletcracker.BGLoader.Status;
 
 import android.app.ActionBar;
 import android.app.DialogFragment;
+import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -141,8 +142,21 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
   }
 
   private void showError(int messageId) {
-    DialogFragment fragment = ErrorDialogFragment.newInstance(messageId);
-    fragment.show(getFragmentManager(), "error");
+    FragmentTransaction ft = getFragmentManager().beginTransaction();
+
+    // remove any previous error fragments
+    Fragment prev = getFragmentManager().findFragmentByTag(ErrorDialogFragment.TAG);
+    if (prev != null) {
+      ft.remove(prev);
+    }
+
+    // add the new error
+    ft.addToBackStack(null);
+    ErrorDialogFragment fragment = ErrorDialogFragment.newInstance(messageId);
+    fragment.show(ft, ErrorDialogFragment.TAG);
+
+    // see note about this in showProgress
+    getFragmentManager().executePendingTransactions();
   }
 
   private void showProgress(Integer messageId, Integer progress, Integer numSteps) {
