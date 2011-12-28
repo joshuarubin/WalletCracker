@@ -55,5 +55,5 @@
   <string name="demo_mode_disabled">Personal information will not be obscured in the DATA screen</string>
   <string name="demo_mode">Demonstration Mode</string>
   <string name="data_preferences">Data Preferences</string>
-  <string name="data_preferences_summary">Settings related to the display of the DATA tab</string>
+  <string name="data_preferences_summary">Settings related to the display of the DATA screen</string>
 </resources>
