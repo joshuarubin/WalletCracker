@@ -6,12 +6,8 @@ import com.zvelo.walletcracker.BGLoader.Progress;
 import com.zvelo.walletcracker.BGLoader.Status;
 
 import android.app.ActionBar;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.DialogFragment;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -24,102 +20,6 @@ import android.view.MenuItem;
 public class WalletCrackerMain extends TrackedActivity implements WalletListener {
   protected final String TAG = this.getClass().getSimpleName();
   protected final String RESTORE = ", can restore state";
-  static private Boolean _progressLock = false;
-  static private ProgressDialogFragment _progress;
-
-
-  public static class ProgressDialogFragment extends DialogFragment {
-    static public final String TAG = "ProgressDialogFragment";
-
-    public static ProgressDialogFragment newInstance(Integer messageId, Integer progress, Integer numSteps) {
-      ProgressDialogFragment fragment = new ProgressDialogFragment();
-
-      Bundle args = new Bundle();
-      args.putInt("messageId", messageId);
-      args.putInt("progress", progress);
-      args.putInt("numSteps", numSteps);
-      fragment.setArguments(args);
-
-      return fragment;
-    }
-
-    @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
-      final Integer messageId = getArguments().getInt("messageId");
-      final Integer progress = getArguments().getInt("progress");
-      final Integer numSteps = getArguments().getInt("numSteps");
-
-      ZveloProgressDialog dialog = new ZveloProgressDialog(getActivity());
-
-      dialog.setTitle(R.string.loading);
-      dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-      dialog.setCancelable(false);
-      dialog.update(messageId, progress, numSteps);
-
-      return (Dialog) dialog;
-    }
-
-    public void update(Integer messageId, Integer progress, Integer numSteps) {
-      ZveloProgressDialog dialog = (ZveloProgressDialog) getDialog();
-      if (dialog == null) {
-        return;
-      }
-      dialog.update(messageId, progress, numSteps);
-    }
-  }
-
-  static public class ZveloProgressDialog extends ProgressDialog {
-    public ZveloProgressDialog(Context context) {
-      super(context);
-    }
-
-    public void update(Integer messageId, Integer progress, Integer numSteps) {
-      if (messageId != null) {
-        setMessage(getContext().getString(messageId));
-      }
-
-      if ((progress == null) || (numSteps == null) || (numSteps == 0)) {
-        setIndeterminate(true);
-      } else {
-        setIndeterminate(false);
-        setMax(numSteps);
-        setProgress(progress);
-      }
-    }
-  }
-
-  static public class ErrorDialogFragment extends DialogFragment {
-    static public final String TAG = "ErrorDialogFragment";
-
-    public static ErrorDialogFragment newInstance(int messageId) {
-      ErrorDialogFragment fragment = new ErrorDialogFragment();
-
-      Bundle args = new Bundle();
-      args.putInt("messageId", messageId);
-      fragment.setArguments(args);
-
-      return fragment;
-    }
-
-    @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
-      final int messageId = getArguments().getInt("messageId");
-
-      return new AlertDialog.Builder(getActivity())
-              .setTitle(R.string.error)
-              .setMessage(messageId)
-              .setCancelable(false)
-              .setNeutralButton(R.string.error_dialog_ok, new DialogInterface.OnClickListener() {
-                @Override public void onClick(DialogInterface dialog, int which) {
-                  ((WalletCrackerMain) getActivity()).doErrorClick();
-                }
-              })
-              .create();
-    }
-  }
-
-  public void doErrorClick() {
-    Log.i(TAG, "Error Clicked");
-    this.finish();
-  }
 
   @Override public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -246,28 +146,36 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
   }
 
   private void showProgress(Integer messageId, Integer progress, Integer numSteps) {
-    synchronized(_progressLock) {
-      if (_progressLock) {
-        Log.d(TAG, "updating existing progress dialog");
-        _progress.update(messageId, progress, numSteps);
-        return;
-      }
+    ProgressDialogFragment fragment = (ProgressDialogFragment) getFragmentManager().findFragmentByTag(ProgressDialogFragment.TAG);
 
-      _progressLock = true;
-
+    if (fragment == null) {
       Log.d(TAG, "creating new progress dialog");
-      _progress = ProgressDialogFragment.newInstance(messageId, progress, numSteps);
-      _progress.show(getFragmentManager(), ProgressDialogFragment.TAG);
+      FragmentTransaction ft = getFragmentManager().beginTransaction();
+      fragment = ProgressDialogFragment.newInstance(messageId, progress, numSteps);
+      fragment.show(ft, ProgressDialogFragment.TAG);
+
+      /*
+       * progress is updated frequently, and the show commits the transaction.
+       * the commit only schedules the changes to run on the activity's UI
+       * thread "as soon as the thread is able to do so". however, if another
+       * progress update comes in before the commit actually completes, then
+       * another dialog will be created which will cause errors later.
+       * run the following command to immediately execute the changes made by
+       * the commit.
+       */
+      getFragmentManager().executePendingTransactions();
+      return;
     }
+
+    Log.d(TAG, "updating existing progress dialog");
+    fragment.update(messageId, progress, numSteps);
   }
 
   private void hideDialog(String tag) {
-    synchronized(_progressLock) {
-      if (_progressLock) {
-        Log.d(TAG, "dismissing "+tag);
-        _progress.dismiss();
-        _progressLock = false;
-      }
+    DialogFragment fragment = (DialogFragment) getFragmentManager().findFragmentByTag(tag);
+    if (fragment != null) {
+      Log.d(TAG, "dismissing "+tag);
+      fragment.dismiss();
     }
   }
 
