@@ -7,9 +7,6 @@ import android.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -75,7 +72,6 @@ public class PinFragment extends Fragment implements WalletListener {
     statusView = (TextView) getActivity().findViewById(R.id.pinStatus);
     dataView = getActivity().findViewById(R.id.pinData);
 
-    setHasOptionsMenu(true);
     rebuild(false);
 
     Log.i(TAG, "onActivityCreated");
@@ -89,21 +85,5 @@ public class PinFragment extends Fragment implements WalletListener {
 
   @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     return inflater.inflate(R.layout.pin, container, false);
-  }
-
-  @Override public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-    Log.i(TAG, "onCreateOptionsMenu");
-    inflater.inflate(R.menu.pinmenu, menu);
-  }
-
-  @Override public boolean onOptionsItemSelected(MenuItem item) {
-    super.onOptionsItemSelected(item);
-    Log.i(TAG, "onOptionsItemSelected");
-    switch (item.getItemId()) {
-      case R.id.rebuild:
-        rebuild(true);
-        break;
-    }
-    return true;
   }
 }

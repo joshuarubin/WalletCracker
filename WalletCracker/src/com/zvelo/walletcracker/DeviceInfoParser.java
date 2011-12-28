@@ -15,6 +15,8 @@ import com.google.protobuf.Message;
 import com.zvelo.walletcracker.GoogleWalletProtos.DeviceInfo;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class DeviceInfoParser {
@@ -126,8 +128,6 @@ public class DeviceInfoParser {
       Map<String, String> ret = new HashMap<String, String>(2);
       ret.put("title", title);
 
-      String value;
-
       if (
 //          fieldName.equals("state_transition_timestamp") ||
           fieldName.equals("updated_at_ms") ||
@@ -135,7 +135,7 @@ public class DeviceInfoParser {
           fieldName.equals("setup_completion_time_in_millis")
       ) {
         Date d = new Date((Long) entry.getValue());
-        ret.put("value", d.toString());
+        ret.put("value", obscureValue(fieldName, d.toString()));
         data.add(ret);
       } else {
         switch (entry.getKey().getJavaType()) {
@@ -145,17 +145,15 @@ public class DeviceInfoParser {
           case DOUBLE:
           case BOOLEAN:
           case STRING:
-            value = entry.getValue().toString();
-            ret.put("value", value);
+            ret.put("value", obscureValue(fieldName, entry.getValue().toString()));
             data.add(ret);
             break;
           case ENUM:
-            ret.put("value", ((EnumValueDescriptor) entry.getValue()).getName());
+            ret.put("value", obscureValue(fieldName, ((EnumValueDescriptor) entry.getValue()).getName()));
             data.add(ret);
             break;
           case BYTE_STRING:
-            value = ((ByteString) entry.getValue()).toStringUtf8();
-            ret.put("value", value);
+            ret.put("value", obscureValue(fieldName, ((ByteString) entry.getValue()).toStringUtf8()));
             data.add(ret);
             break;
           case MESSAGE:
@@ -166,6 +164,25 @@ public class DeviceInfoParser {
     }
 
     return data;
+  }
+
+  private String obscureValue(String fieldName, String value) {
+    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(_context);
+    if (!preferences.getBoolean("demo_mode", false)) {
+      return value;
+    }
+
+    if (fieldName.equals("wallet_uuid") ||
+        fieldName.equals("gaia_account") ||
+        fieldName.equals("originator_id") ||
+        fieldName.equals("local_id") ||
+        fieldName.equals("android_id") ||
+        fieldName.equals("cplc")
+    ) {
+      return value.replaceAll("[0-9a-zA-Z]", "X");
+    }
+
+    return value;
   }
 
   public Integer crackPin() {

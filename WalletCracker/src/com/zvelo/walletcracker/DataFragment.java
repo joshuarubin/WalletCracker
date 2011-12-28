@@ -8,9 +8,6 @@ import android.app.ListFragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SimpleAdapter;
@@ -83,7 +80,6 @@ public class DataFragment extends ListFragment implements WalletListener {
         new int[] {R.id.title,
                    R.id.value});
     setListAdapter(listAdapter);
-    setHasOptionsMenu(true);
 
     rebuild(false);
 
@@ -94,25 +90,9 @@ public class DataFragment extends ListFragment implements WalletListener {
     return inflater.inflate(R.layout.datalist, container, false);
   }
 
-  @Override public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-    Log.i(TAG, "onCreateOptionsMenu");
-    inflater.inflate(R.menu.datamenu, menu);
-  }
-
   public void rebuild(Boolean force) {
     showLoading();
     Log.i(TAG, "DataFragment rebuild");
     new BGLoader().execute(this, getActivity(), force);
-  }
-
-  @Override public boolean onOptionsItemSelected(MenuItem item) {
-    super.onOptionsItemSelected(item);
-    Log.i(TAG, "onOptionsItemSelected");
-    switch (item.getItemId()) {
-      case R.id.rebuild:
-        rebuild(true);
-        break;
-    }
-    return true;
   }
 }

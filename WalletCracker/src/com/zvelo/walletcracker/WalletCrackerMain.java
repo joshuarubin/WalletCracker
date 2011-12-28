@@ -4,9 +4,13 @@ import com.viewpagerindicator.TitlePageIndicator;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 public class WalletCrackerMain extends Activity {
   protected final String TAG = this.getClass().getSimpleName();
@@ -28,8 +32,7 @@ public class WalletCrackerMain extends Activity {
     pager.setAdapter(adapter);
     indicator.setViewPager(pager);
 
-    Log.i(TAG, "WalletCrackerMain rebuild");
-    new BGLoader().execute(this, false);
+    rebuild(false);
 
     // savedInstanceState could be null
     if (savedInstanceState != null) {
@@ -100,5 +103,33 @@ public class WalletCrackerMain extends Activity {
   @Override protected void onUserLeaveHint() {
     super.onUserLeaveHint();
     Log.i(TAG, "onUserLeaveHint");
+  }
+
+  @Override public boolean onCreateOptionsMenu(Menu menu) {
+    final MenuInflater inflater = getMenuInflater();
+    Log.i(TAG, "onCreateOptionsMenu");
+    inflater.inflate(R.menu.mainmenu, menu);
+    return true;
+  }
+
+  @Override public boolean onOptionsItemSelected(MenuItem item) {
+    super.onOptionsItemSelected(item);
+    Log.i(TAG, "onOptionsItemSelected");
+    switch (item.getItemId()) {
+      case R.id.rebuild:
+        Log.i(TAG, "user asked for rebuild");
+        rebuild(true);
+        break;
+      case R.id.prefs:
+        Log.i(TAG, "user asked for prefs");
+        startActivity(new Intent(this, PreferencesMain.class));
+        break;
+    }
+    return true;
+  }
+
+  private void rebuild(Boolean force) {
+    Log.i(TAG, "rebuild force: "+force);
+    new BGLoader().execute(this, force);
   }
 }
