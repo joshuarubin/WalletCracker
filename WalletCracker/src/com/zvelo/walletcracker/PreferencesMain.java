@@ -4,6 +4,7 @@ import java.util.List;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
@@ -24,6 +25,7 @@ public class PreferencesMain extends PreferenceActivity implements OnSharedPrefe
   @Override public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
+    // TODO: implement event based listener removal and remove the registered flag
     synchronized(registered) {
       if (!registered) {
         registered = true;
@@ -44,7 +46,7 @@ public class PreferencesMain extends PreferenceActivity implements OnSharedPrefe
   }
 
   private void rebuild(Boolean force) {
-    Log.i(TAG, "rebuild force: "+force);
-    new BGLoader().execute(this, force);
+    Log.i(TAG, "rebuild, force: "+force);
+    new BGLoader().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, force);
   }
 }

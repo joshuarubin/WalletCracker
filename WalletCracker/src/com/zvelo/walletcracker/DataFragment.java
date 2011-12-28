@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import android.app.ListFragment;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,14 +22,13 @@ public class DataFragment extends ListFragment implements WalletListener {
   protected SimpleAdapter listAdapter;
   protected List<Map<String, String>> listData;
 
-  @Override public void walletProgress(BGLoader.Progress progress, DeviceInfoParser parser) {
+  @Override public void walletProgress(BGLoader.Progress progress, Integer numSteps, DeviceInfoParser parser) {
     switch (progress) {
-      case LOADING:
-        showLoading();
-        break;
       case LOADED:
         showData(parser);
         break;
+      default:
+        clear();
     }
   }
 
@@ -37,21 +37,10 @@ public class DataFragment extends ListFragment implements WalletListener {
       case SUCCESS:
         showData(parser);
         break;
-      case NO_WALLET:
-        showError(R.string.wallet_not_found);
-        break;
-      case NO_ROOT:
-        showError(R.string.root_not_found);
-        break;
     }
   }
 
-  private void showLoading() {
-    showError(R.string.loading);
-  }
-
-  private void showError(int stringId) {
-    statusView.setText(stringId);
+  private void clear() {
     listData.clear();
     listAdapter.notifyDataSetChanged();
   }
@@ -91,8 +80,8 @@ public class DataFragment extends ListFragment implements WalletListener {
   }
 
   public void rebuild(Boolean force) {
-    showLoading();
-    Log.i(TAG, "DataFragment rebuild");
-    new BGLoader().execute(this, getActivity(), force);
+    clear();
+    Log.i(TAG, "rebuild, force: "+force);
+    new BGLoader().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, getActivity(), force);
   }
 }

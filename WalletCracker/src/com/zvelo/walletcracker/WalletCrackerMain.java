@@ -1,10 +1,16 @@
 package com.zvelo.walletcracker;
 
 import com.viewpagerindicator.TitlePageIndicator;
+import com.zvelo.walletcracker.BGLoader.Progress;
+import com.zvelo.walletcracker.BGLoader.Status;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -12,13 +18,18 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-public class WalletCrackerMain extends Activity {
+public class WalletCrackerMain extends Activity implements WalletListener {
   protected final String TAG = this.getClass().getSimpleName();
   protected final String RESTORE = ", can restore state";
+  protected ProgressDialog _progress;
 
   @Override public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.pager);
+
+    _progress = new ProgressDialog(this);
+    _progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+    _progress.setCancelable(false);
 
     getActionBar().setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
 
@@ -129,7 +140,76 @@ public class WalletCrackerMain extends Activity {
   }
 
   private void rebuild(Boolean force) {
-    Log.i(TAG, "rebuild force: "+force);
-    new BGLoader().execute(this, force);
+    Log.i(TAG, "rebuild, force: "+force);
+    new BGLoader().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, this, force);
+  }
+
+  public void showError(int stringId) {
+    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    builder.setMessage(stringId)
+           .setCancelable(false)
+           .setNeutralButton("OK", new DialogInterface.OnClickListener() {
+              @Override public void onClick(DialogInterface dialog, int which) {
+                WalletCrackerMain.this.finish();
+              }
+          })
+          .show();
+  }
+
+  private void showProgress(Integer stringId, Integer progress, Integer numSteps) {
+    if (stringId != null) {
+      _progress.setMessage(getString(stringId));
+    }
+
+    if ((progress == null) || (numSteps == null) || (numSteps == 0)) {
+      _progress.setIndeterminate(true);
+    } else {
+      _progress.setIndeterminate(false);
+      _progress.setMax(numSteps);
+      _progress.setProgress(progress);
+    }
+
+    _progress.show();
+  }
+
+  private void hideProgress() {
+    _progress.hide();
+  }
+
+  @Override  public void walletLoaded(Status result, DeviceInfoParser parser) {
+    hideProgress();
+
+    switch (result) {
+      case NO_WALLET:
+        showError(R.string.wallet_not_found);
+        break;
+      case NO_ROOT:
+        showError(R.string.root_not_found);
+        break;
+    }
+  }
+
+  @Override public void walletProgress(Progress progress, Integer numSteps, DeviceInfoParser parser) {
+    int stringId = R.string.loading;
+
+    switch (progress) {
+      case LOADING_COPYING:
+        stringId = R.string.loading_copying;
+        break;
+      case LOADING_CRACKING:
+        stringId = R.string.loading_cracking;
+        break;
+      case LOADING_WALLET:
+        stringId = R.string.loading_wallet;
+        break;
+      case LOADING_ROOT:
+        stringId = R.string.loading_root;
+        break;
+      case LOADED:
+        stringId = R.string.loaded;
+        break;
+    }
+
+    showProgress(stringId, ((progress == null) ? null : progress.ordinal()+1), numSteps);
   }
 }

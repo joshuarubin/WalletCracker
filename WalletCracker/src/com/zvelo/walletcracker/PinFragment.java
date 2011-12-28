@@ -4,6 +4,7 @@ import com.zvelo.walletcracker.BGLoader.Progress;
 import com.zvelo.walletcracker.BGLoader.Status;
 
 import android.app.Fragment;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,49 +16,34 @@ public class PinFragment extends Fragment implements WalletListener {
   protected final String TAG = this.getClass().getSimpleName();
   protected final String RESTORE = ", can restore state";
 
-  protected TextView statusView;
   protected TextView pinValue;
   protected View dataView;
+
+  @Override public void walletProgress(Progress progress, Integer numSteps, DeviceInfoParser parser) {
+    switch (progress) {
+      case LOADED:
+        showData(parser);
+        break;
+      default:
+        clear();
+    }
+  }
 
   @Override public void walletLoaded(Status result, DeviceInfoParser parser) {
     switch (result) {
       case SUCCESS:
         showData(parser);
         break;
-      case NO_WALLET:
-        showError(R.string.wallet_not_found);
-        break;
-      case NO_ROOT:
-        showError(R.string.root_not_found);
-        break;
     }
   }
 
-  @Override public void walletProgress(Progress progress, DeviceInfoParser parser) {
-    switch (progress) {
-      case LOADING:
-        showLoading();
-        break;
-      case LOADED:
-        showData(parser);
-        break;
-    }
+  private void clear() {
+    dataView.setVisibility(View.GONE);
   }
 
   private void showData(DeviceInfoParser parser) {
     pinValue.setText(DeviceInfoParser.formatPin(parser.crackPin()));
-    statusView.setVisibility(View.GONE);
     dataView.setVisibility(View.VISIBLE);
-  }
-
-  private void showLoading() {
-    showError(R.string.loading);
-  }
-  
-  private void showError(int stringId) {
-    statusView.setText(stringId);
-    dataView.setVisibility(View.GONE);
-    statusView.setVisibility(View.VISIBLE);
   }
 
   @Override public void onActivityCreated(Bundle savedInstanceState) {
@@ -69,7 +55,6 @@ public class PinFragment extends Fragment implements WalletListener {
     }
 
     pinValue = (TextView) getActivity().findViewById(R.id.pinValue);
-    statusView = (TextView) getActivity().findViewById(R.id.pinStatus);
     dataView = getActivity().findViewById(R.id.pinData);
 
     rebuild(false);
@@ -78,9 +63,9 @@ public class PinFragment extends Fragment implements WalletListener {
   }
 
   public void rebuild(Boolean force) {
-    showLoading();
-    Log.i(TAG, "PinFragment rebuild");
-    new BGLoader().execute(this, getActivity(), force);
+    clear();
+    Log.i(TAG, "rebuild, force: "+force);
+    new BGLoader().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, getActivity(), force);
   }
 
   @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

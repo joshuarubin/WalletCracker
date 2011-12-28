@@ -21,6 +21,10 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
 
   public enum Progress {
     LOADING,
+    LOADING_WALLET,
+    LOADING_ROOT,
+    LOADING_COPYING,
+    LOADING_CRACKING,
     LOADED,
   }
 
@@ -39,14 +43,23 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
     }
   }
 
+  // TODO: implement event based listener removal on all clients
+  static public void removeListener(WalletListener listener) {
+    synchronized(_listeners) {
+      _listeners.remove(listener);
+    }
+  }
+
   // runs on the UI thread
   @Override protected void onPostExecute(Status result) {
     super.onPostExecute(result);
 
     synchronized(_parserLock) {
-      synchronized(_listeners) {
-        for (WalletListener listener : _listeners) {
-          listener.walletLoaded(result, _parser);
+      if ((result != Status.SUCCESS) || (_parser != null)) {
+        synchronized(_listeners) {
+          for (WalletListener listener : _listeners) {
+            listener.walletLoaded(result, _parser);
+          }
         }
       }
     }
@@ -67,8 +80,9 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
 
     synchronized(_parserLock) {
       synchronized(_listeners) {
+        Log.i(TAG, "publishing progress "+progress.toString()+" to "+_listeners.size()+" listeners");
         for (WalletListener listener : _listeners) {
-          listener.walletProgress(progress, _parser);
+          listener.walletProgress(progress, Progress.values().length, _parser);
         }
       }
     }
@@ -109,6 +123,8 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
     final PackageManager pm = context.getPackageManager();
     List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
 
+    publishProgress(Progress.LOADING_WALLET);
+
     Boolean walletFound = false;
     for (ApplicationInfo packageInfo : packages) {
       if (packageInfo.packageName.equals(context.getString(R.string.package_google_wallet))) {
@@ -119,13 +135,19 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
     if (!walletFound) {
       Log.i(TAG, "Could not find wallet app installed");
       return Status.NO_WALLET;
-    } else if (!WalletCopier.canRunRootCommands()) {
+    }
+
+    publishProgress(Progress.LOADING_ROOT);
+
+    if (!WalletCopier.canRunRootCommands()) {
       Log.i(TAG, "Could not gain root");
       return Status.NO_ROOT;
     }
 
+    publishProgress(Progress.LOADING_COPYING);
     new WalletCopier(context).execute();
 
+    publishProgress(Progress.LOADING_CRACKING);
     WalletDatastoreCopyDbHelper walletDb = null;
     try {
       // crack the pin in the bg thread so it is cached in the ui thread
