@@ -14,13 +14,13 @@ public class ViewPagerAdapter extends FragmentPagerAdapter implements TitleProvi
   private final Context _context;
   private final ArrayList<TabInfo> _tabs = new ArrayList<TabInfo>();
 
-  static final class TabInfo {
+  final class TabInfo {
     private final String _title;
     private final Class<?> _class;
     private final Bundle _args;
 
-    TabInfo(String title, Class<?> clss, Bundle args) {
-      _title = title;
+    TabInfo(Integer titleId, Class<?> clss, Bundle args) {
+      _title = _context.getString(titleId);
       _class = clss;
       _args = args;
     }
@@ -32,7 +32,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter implements TitleProvi
   }
 
   public void addTab(int titleId, Class<?> clss, Bundle args) {
-    TabInfo info = new TabInfo(_context.getString(titleId), clss, args);
+    TabInfo info = new TabInfo(titleId, clss, args);
     _tabs.add(info);
   }
 

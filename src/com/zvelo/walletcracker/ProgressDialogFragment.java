@@ -21,6 +21,8 @@ public class ProgressDialogFragment extends DialogFragment {
   }
 
   @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
+    super.onCreateDialog(savedInstanceState);
+
     final Integer messageId = getArguments().getInt("messageId");
     final Integer progress = getArguments().getInt("progress");
     final Integer numSteps = getArguments().getInt("numSteps");

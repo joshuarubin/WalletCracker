@@ -44,6 +44,8 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
     if (savedInstanceState != null) {
       // TODO
     }
+
+    Log.i(TAG, "onCreate");
   }
 
   @Override protected void onRestart() {
@@ -80,18 +82,19 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
 
   @Override protected void onSaveInstanceState(Bundle outState) {
     super.onSaveInstanceState(outState);
-    // TODO
     Log.i(TAG, "onSaveInstanceState");
   }
 
   @Override protected void onRestoreInstanceState(Bundle savedState) {
     super.onRestoreInstanceState(savedState);
+
     Object oldTaskObject = getLastNonConfigurationInstance();
     if (oldTaskObject != null) {
       int oldTask = ((Integer) oldTaskObject).intValue();
       int currentTask = getTaskId();
       assert oldTask == currentTask;
     }
+
     Log.i(TAG, "onRestoreInstanceState" + (null == savedState ? "" : RESTORE));
   }
 
@@ -145,7 +148,14 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
     new BGLoader().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, force);
   }
 
-  private void showError(int messageId) {
+  private void showError(Integer messageId) {
+    if ((messageId == null) || (messageId == 0)) {
+      Log.i(TAG, "Not showing invalid error");
+      return;
+    }
+
+    Log.e(TAG, "Error: " + getString(messageId));
+
     FragmentTransaction ft = getFragmentManager().beginTransaction();
 
     // remove any previous error fragments
