@@ -45,7 +45,7 @@ public final class WalletCopier extends ExecuteAsRootBase {
       while ((c = in.read()) != -1) {
         rootcopy_out.write(c);
       }
-      
+
       in.close();
       rootcopy_out.close();
     } catch (IOException e) {

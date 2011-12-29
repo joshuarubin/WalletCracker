@@ -1,5 +1,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/rebuild"
-          android:title="@string/rebuild" android:showAsAction="ifRoom|withText"/>
-    <item android:id="@+id/prefs" android:title="@string/prefs" android:showAsAction="never"></item>
+
+  <item
+    android:id="@+id/rebuild"
+    android:title="@string/rebuild"
+    android:showAsAction="ifRoom|withText" />
+
+  <item
+    android:id="@+id/prefs"
+    android:title="@string/prefs"
+    android:showAsAction="never" />
+
+  <item
+    android:id="@+id/showLicenses"
+    android:title="@string/licenses"
+    android:showAsAction="never" />
+
 </menu>

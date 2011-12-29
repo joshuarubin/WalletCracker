@@ -132,6 +132,10 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
         Log.i(TAG, "user asked for prefs");
         startActivity(new Intent(this, PreferencesMain.class));
         break;
+      case R.id.showLicenses:
+        Log.i(TAG, "user asked for licenses");
+        startActivity(new Intent(this, LicensesMain.class));
+        break;
     }
     return true;
   }

@@ -48,7 +48,6 @@
   <string name="about">ABOUT</string>
   <string name="rebuild">Rebuild</string>
   <string name="prefs">Preferences</string>
-  <string name="author_label">Author: </string>
   <string name="author">Joshua Rubin</string>
   <string name="your_pin_is">Your Google Wallet PIN Is:</string>
   <string name="demo_mode_enabled">Obscure personal information in the DATA screen</string>
@@ -69,4 +68,10 @@
   <integer name="ga_dispatchPeriod">5</integer>
   <bool name="ga_auto_activity_tracking">true</bool>
   <string name="error_dialog_ok">OK</string>
+  <string name="copyright">© 2012 zvelo, Inc.</string>
+  <string name="email">jrubin@zvelo.com</string>
+  <string name="licenses">Licenses</string>
+  <string name="allrights">All rights reserved</string>
+  <string name="license">Licensed under the terms of the GPLv3</string>
+  <string name="seelicenses">Click \"Licenses\" in menu\nfor more licensing details</string>
 </resources>
