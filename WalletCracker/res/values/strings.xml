@@ -61,8 +61,8 @@
   <string name="loading_copying">Copying Google Wallet data...</string>
   <string name="loading_cracking">Cracking Google Wallet PIN...</string>
   <string name="loaded">Loaded</string>
-  <string name="ga_api_key">abc</string>
-  <bool name="ga_debug">false</bool>
+  <string name="ga_api_key">UA-27966737-1</string>
+  <bool name="ga_debug">true</bool>
   <bool name="ga_dryRun">false</bool>
   <bool name="ga_anonymizeIp">false</bool>
   <integer name="ga_sampleRate">100</integer>
