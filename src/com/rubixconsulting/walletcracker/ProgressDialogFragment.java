@@ -1,4 +1,6 @@
-package com.zvelo.walletcracker;
+package com.rubixconsulting.walletcracker;
+
+import com.zvelo.walletcracker.R;
 
 import android.app.Dialog;
 import android.app.DialogFragment;

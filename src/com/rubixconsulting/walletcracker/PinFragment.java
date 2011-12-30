@@ -1,46 +1,44 @@
-package com.zvelo.walletcracker;
+package com.rubixconsulting.walletcracker;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import com.rubixconsulting.walletcracker.BGLoader.Progress;
+import com.rubixconsulting.walletcracker.BGLoader.Status;
+import com.zvelo.walletcracker.R;
 
-import android.app.ListFragment;
+import android.app.Fragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-public class DataFragment extends ListFragment implements WalletListener {
+public class PinFragment extends Fragment implements WalletListener {
   protected final String TAG = this.getClass().getSimpleName();
   protected final String RESTORE = ", can restore state";
 
-  protected TextView statusView;
-  protected SimpleAdapter listAdapter;
-  protected List<Map<String, String>> listData;
+  protected TextView pinValue;
+  protected View dataView;
 
-  @Override public void walletProgress(BGLoader.Progress progress, Integer numSteps) {
+  @Override public void walletProgress(Progress progress, Integer numSteps) {
+    Log.i(TAG, "got progress: "+progress.toString());
     clear();
   }
 
-  @Override public void walletLoaded(BGLoader.Status result, DeviceInfoParser parser) {
+  @Override public void walletLoaded(Status result, DeviceInfoParser parser) {
+    Log.i(TAG, "got loaded: "+result.toString());
     if (result == BGLoader.Status.SUCCESS) {
       showData(parser);
     }
   }
 
   private void clear() {
-    listData.clear();
-    listAdapter.notifyDataSetChanged();
+    dataView.setVisibility(View.GONE);
   }
 
   private void showData(DeviceInfoParser parser) {
-    listData.clear();
-    listData.addAll(parser.getData());
-    listAdapter.notifyDataSetChanged();
+    pinValue.setText(DeviceInfoParser.formatPin(parser.crackPin()));
+    dataView.setVisibility(View.VISIBLE);
   }
 
   @Override public void onActivityCreated(Bundle savedInstanceState) {
@@ -51,30 +49,22 @@ public class DataFragment extends ListFragment implements WalletListener {
       // TODO
     }
 
-    statusView = (TextView) getActivity().findViewById(android.R.id.empty);
-    listData = new ArrayList<Map<String, String>>();
-    listAdapter = new SimpleAdapter(
-        getActivity(),
-        listData,
-        R.layout.datalistitem,
-        new String[] {"title", "value"},
-        new int[] {R.id.title,
-                   R.id.value});
-    setListAdapter(listAdapter);
+    pinValue = (TextView) getActivity().findViewById(R.id.pinValue);
+    dataView = getActivity().findViewById(R.id.pinData);
 
     rebuild(false);
 
     Log.i(TAG, "onActivityCreated");
   }
 
-  @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    return inflater.inflate(R.layout.datalist, container, false);
-  }
-
   public void rebuild(Boolean force) {
     clear();
     Log.i(TAG, "rebuild, force: "+force);
     new BGLoader().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, getActivity(), force);
+  }
+
+  @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    return inflater.inflate(R.layout.pin, container, false);
   }
 
   @Override public void onPause() {

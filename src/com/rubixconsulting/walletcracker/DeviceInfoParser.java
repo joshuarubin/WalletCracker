@@ -1,4 +1,4 @@
-package com.zvelo.walletcracker;
+package com.rubixconsulting.walletcracker;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -12,7 +12,8 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import com.zvelo.walletcracker.GoogleWalletProtos.DeviceInfo;
+import com.rubixconsulting.walletcracker.GoogleWalletProtos.DeviceInfo;
+import com.zvelo.walletcracker.R;
 
 import android.content.Context;
 import android.content.SharedPreferences;

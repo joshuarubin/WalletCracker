@@ -1,4 +1,4 @@
-package com.zvelo.walletcracker;
+package com.rubixconsulting.walletcracker;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -7,6 +7,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+
+import com.zvelo.walletcracker.R;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;

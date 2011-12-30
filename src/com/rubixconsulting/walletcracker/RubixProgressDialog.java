@@ -1,4 +1,4 @@
-package com.zvelo.walletcracker;
+package com.rubixconsulting.walletcracker;
 
 import android.app.ProgressDialog;
 import android.content.Context;

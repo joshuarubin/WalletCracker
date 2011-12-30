@@ -1,9 +1,10 @@
-package com.zvelo.walletcracker;
+package com.rubixconsulting.walletcracker;
 
 import com.google.android.apps.analytics.easytracking.TrackedActivity;
+import com.rubixconsulting.walletcracker.BGLoader.Progress;
+import com.rubixconsulting.walletcracker.BGLoader.Status;
 import com.viewpagerindicator.TitlePageIndicator;
-import com.zvelo.walletcracker.BGLoader.Progress;
-import com.zvelo.walletcracker.BGLoader.Status;
+import com.zvelo.walletcracker.R;
 
 import android.app.DialogFragment;
 import android.app.Fragment;

@@ -1,8 +1,10 @@
-package com.zvelo.walletcracker;
+package com.rubixconsulting.walletcracker;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.zvelo.walletcracker.R;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;

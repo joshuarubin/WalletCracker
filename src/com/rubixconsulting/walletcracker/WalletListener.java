@@ -1,4 +1,4 @@
-package com.zvelo.walletcracker;
+package com.rubixconsulting.walletcracker;
 
 public interface WalletListener {
   void walletLoaded(BGLoader.Status result, DeviceInfoParser parser);

@@ -1,4 +1,4 @@
-package com.zvelo.walletcracker;
+package com.rubixconsulting.walletcracker;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
