@@ -25,7 +25,7 @@ public class DeviceInfoParser {
   protected DeviceInfo _deviceInfo;
   protected Context _context;
   protected List<Map<String, String>> _dataCache;
-  private static Map<String, Integer> _pinCache = new HashMap<String, Integer>();
+  private static Boolean _pinCacheLock = false;
 
   public DeviceInfoParser(Context context, byte deviceInfoRaw[]) {
     _context = context;
@@ -185,23 +185,22 @@ public class DeviceInfoParser {
     return value;
   }
 
-  public Integer crackPin() {
-    final Long salt = _deviceInfo.getPinInfo().getSalt();
-    final String hash = _deviceInfo.getPinInfo().getPinHash().toStringUtf8();
-    final String cacheKey = hash + salt;
-
-    synchronized(_pinCache) {
-      if (_pinCache.containsKey(cacheKey)) {
-        Log.d(TAG, "crackPin found cached pin");
-        return _pinCache.get(cacheKey);
-      }
+  private Integer getCachedPin(WalletCrackerDbHelper crackerDb, Long salt, String hash) {
+    final Integer cachedPin = crackerDb.getPin(salt, hash);
+    if (cachedPin == null) {
+      return cachedPin;
+    } else if (cachedPin < 0) {
+      Log.e(TAG, "crackPin found cached error pin");
+    } else {
+      Log.d(TAG, "crackPin found cached pin");
     }
+    return cachedPin;
+  }
 
-    Log.d(TAG, "crackPin calculating pin...");
-
-    for (Integer pin = 0; pin < 10000; ++pin) {
+  private Integer bruteForcePin(Long salt, String hash) {
+    for (Integer tryPin = 0; tryPin < 10000; ++tryPin) {
       try {
-        byte calc[] = MessageDigest.getInstance("SHA256").digest((pin.toString()+salt).getBytes());
+        byte calc[] = MessageDigest.getInstance("SHA256").digest((tryPin.toString()+salt).getBytes());
 
         StringBuffer hex = new StringBuffer();
         for (final byte b : calc) {
@@ -210,21 +209,49 @@ public class DeviceInfoParser {
 
         String calcHash = hex.toString();
         if (calcHash.toLowerCase().equals(hash.toLowerCase())) {
-          synchronized(_pinCache) {
-            _pinCache.put(cacheKey, pin);
-          }
-          return pin;
+          return tryPin;
         }
       } catch (NoSuchAlgorithmException e) {
         Log.e(TAG, "no such algorithm");
       }
     }
 
-    synchronized(_pinCache) {
-      _pinCache.put(cacheKey, null);
+    return WalletCrackerDbHelper.PIN_ERROR;
+  }
+
+  private Integer crackPinAsNeeded(WalletCrackerDbHelper crackerDb, Long salt, String hash) {
+    final Integer cachedPin = getCachedPin(crackerDb, salt, hash);
+    if (cachedPin != null) {
+      return cachedPin;
     }
-    Log.d(TAG, "Could not compute PIN");
-    return null;
+
+    Log.d(TAG, "crackPin calculating pin...");
+
+    final Integer bruteForcedPin = bruteForcePin(salt, hash);
+    if (bruteForcedPin == WalletCrackerDbHelper.PIN_ERROR) {
+      Log.e(TAG, "Could not compute PIN");
+    }
+
+    crackerDb.addPin(salt, hash, bruteForcedPin);
+    return bruteForcedPin;
+  }
+
+  public Integer crackPin() {
+    final Long salt = _deviceInfo.getPinInfo().getSalt();
+    final String hash = _deviceInfo.getPinInfo().getPinHash().toStringUtf8();
+    WalletCrackerDbHelper crackerDb = null;
+
+    try {
+      crackerDb = new WalletCrackerDbHelper(_context);
+
+      synchronized(_pinCacheLock) {
+        return crackPinAsNeeded(crackerDb, salt, hash);
+      }
+    } finally {
+      if (crackerDb != null) {
+        crackerDb.close();
+      }
+    }
   }
 
   static public String formatPin(Integer pin) {
