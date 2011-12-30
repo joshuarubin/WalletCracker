@@ -76,4 +76,6 @@
   <string name="seelicenses">Click \"Licenses\" in menu\nfor more licensing details</string>
   <color name="zvelo_dark_blue">#FF072C3C</color>
   <color name="zvelo_soft_gray">#FFD6D6D6</color>
+  <color name="zvelo_blue_text">#FF0077B2</color>
+  <color name="zvelo_text">#FF54514F</color>
 </resources>

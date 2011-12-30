@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.view.ContextThemeWrapper;
 
 public class ProgressDialogFragment extends DialogFragment {
   static public final String TAG = "ProgressDialogFragment";
@@ -27,8 +28,10 @@ public class ProgressDialogFragment extends DialogFragment {
     final Integer progress = getArguments().getInt("progress");
     final Integer numSteps = getArguments().getInt("numSteps");
 
-    ZveloProgressDialog dialog = new ZveloProgressDialog(getActivity());
+    final ContextThemeWrapper wrap = new ContextThemeWrapper(getActivity(), R.style.dialogStyle);
+    ZveloProgressDialog dialog = new ZveloProgressDialog(wrap);
 
+    setCancelable(false);
     dialog.setTitle(R.string.loading);
     dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
     dialog.setCancelable(false);

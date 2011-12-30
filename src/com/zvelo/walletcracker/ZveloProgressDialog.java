@@ -8,6 +8,10 @@ public class ZveloProgressDialog extends ProgressDialog {
     super(context);
   }
 
+  public ZveloProgressDialog(Context context, int theme) {
+    super(context, theme);
+  }
+
   public void update(Integer messageId, Integer progress, Integer numSteps) {
     if (messageId != null) {
       setMessage(getContext().getString(messageId));

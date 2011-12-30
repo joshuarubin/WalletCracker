@@ -6,6 +6,7 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 
 public class ErrorDialogFragment extends DialogFragment {
   static public final String TAG = "ErrorDialogFragment";
@@ -53,7 +54,9 @@ public class ErrorDialogFragment extends DialogFragment {
 
     setCancelable(false);
 
-    return new AlertDialog.Builder(getActivity())
+    final ContextThemeWrapper wrap = new ContextThemeWrapper(getActivity(), R.style.dialogStyle);
+
+    return new AlertDialog.Builder(wrap)
             .setTitle(R.string.error)
             .setMessage(messageId)
             .setCancelable(false)

@@ -12,7 +12,7 @@
     android:icon="@drawable/ic_launcher"
     android:label="@string/app_name"
     android:hardwareAccelerated="true"
-    android:theme="@style/zvelo.Light">
+    android:theme="@style/zvelo">
     <activity
       android:name="WalletCrackerMain"
       android:label="@string/app_name">
