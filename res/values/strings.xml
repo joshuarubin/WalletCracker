@@ -74,4 +74,6 @@
   <string name="allrights">All rights reserved</string>
   <string name="license">Licensed under the terms of the GPLv3</string>
   <string name="seelicenses">Click \"Licenses\" in menu\nfor more licensing details</string>
+  <color name="zvelo_dark_blue">#FF072C3C</color>
+  <color name="zvelo_soft_gray">#FFD6D6D6</color>
 </resources>

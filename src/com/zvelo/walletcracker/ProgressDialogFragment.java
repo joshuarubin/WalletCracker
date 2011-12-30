@@ -33,6 +33,7 @@ public class ProgressDialogFragment extends DialogFragment {
     dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
     dialog.setCancelable(false);
     dialog.update(messageId, progress, numSteps);
+    dialog.setIcon(R.drawable.ic_dialog_time);
 
     return (Dialog) dialog;
   }

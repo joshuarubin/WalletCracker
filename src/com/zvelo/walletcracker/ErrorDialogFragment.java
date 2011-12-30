@@ -57,6 +57,7 @@ public class ErrorDialogFragment extends DialogFragment {
             .setTitle(R.string.error)
             .setMessage(messageId)
             .setCancelable(false)
+            .setIcon(R.drawable.ic_dialog_alert_holo_light)
             .setNeutralButton(R.string.error_dialog_ok, new DialogInterface.OnClickListener() {
               @Override public void onClick(DialogInterface dialog, int which) {
                 // What to do?

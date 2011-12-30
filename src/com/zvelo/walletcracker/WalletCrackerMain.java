@@ -5,7 +5,6 @@ import com.viewpagerindicator.TitlePageIndicator;
 import com.zvelo.walletcracker.BGLoader.Progress;
 import com.zvelo.walletcracker.BGLoader.Status;
 
-import android.app.ActionBar;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -25,8 +24,6 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
   @Override public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.pager);
-
-    getActionBar().setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
 
     ViewPagerAdapter adapter = new ViewPagerAdapter(this);
     adapter.addTab(R.string.pin,   PinFragment.class,   null);

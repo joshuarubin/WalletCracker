@@ -3,6 +3,7 @@
 
  <header android:fragment="com.zvelo.walletcracker.PreferencesMain$DataPreferences"
             android:title="@string/data_preferences"
+            android:icon="@drawable/ic_menu_preferences"
             android:summary="@string/data_preferences_summary" />
 
 </preference-headers>

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <style name="zvelo.Light" parent="@android:style/Theme.Holo.Light">
-    <item name="vpiCirclePageIndicatorStyle">@style/zvelo.Light.circlePageIndicator</item>
+  <style name="zvelo.Light" parent="@android:style/Theme.Holo.Light.DarkActionBar">
     <item name="vpiTitlePageIndicatorStyle">@style/zvelo.Light.titlePageIndicator</item>
+    <item name="android:actionBarStyle">@style/zvelo.Light.actionBarStyle</item>
   </style>
 
   <style name="zvelo.Light.titlePageIndicator">
-    <item name="android:background">#18FF0000</item>
-    <item name="footerColor">#FFAA2222</item>
+    <item name="android:background">@color/zvelo_soft_gray</item>
+    <item name="footerColor">@color/zvelo_dark_blue</item>
     <item name="footerLineHeight">1dp</item>
     <item name="footerIndicatorHeight">3dp</item>
     <item name="footerIndicatorStyle">underline</item>
@@ -16,12 +16,8 @@
     <item name="selectedBold">true</item>
   </style>
 
-  <style name="zvelo.Light.circlePageIndicator">
-    <item name="android:background">#FFCCCCCC</item>
-    <item name="fillColor">#FF888888</item>
-    <item name="strokeColor">#FF000000</item>
-    <item name="strokeWidth">2dp</item>
-    <item name="radius">10dp</item>
-    <item name="centered">true</item>
+  <style name="zvelo.Light.actionBarStyle" parent="@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
+    <item name="android:background">@color/zvelo_dark_blue</item>
+    <item name="android:displayOptions">useLogo|showHome</item>
   </style>
 </resources>
