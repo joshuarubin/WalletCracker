@@ -2,7 +2,6 @@ package com.rubixconsulting.walletcracker;
 
 import com.rubixconsulting.walletcracker.BGLoader.Progress;
 import com.rubixconsulting.walletcracker.BGLoader.Status;
-import com.zvelo.walletcracker.R;
 
 import android.app.Fragment;
 import android.os.AsyncTask;

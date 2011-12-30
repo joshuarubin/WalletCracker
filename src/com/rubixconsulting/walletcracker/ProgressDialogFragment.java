@@ -1,7 +1,5 @@
 package com.rubixconsulting.walletcracker;
 
-import com.zvelo.walletcracker.R;
-
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
@@ -31,7 +29,7 @@ public class ProgressDialogFragment extends DialogFragment {
     final Integer numSteps = getArguments().getInt("numSteps");
 
     final ContextThemeWrapper wrap = new ContextThemeWrapper(getActivity(), R.style.dialogStyle);
-    ZveloProgressDialog dialog = new ZveloProgressDialog(wrap);
+    RubixProgressDialog dialog = new RubixProgressDialog(wrap);
 
     setCancelable(false);
     dialog.setTitle(R.string.loading);
@@ -44,7 +42,7 @@ public class ProgressDialogFragment extends DialogFragment {
   }
 
   public void update(Integer messageId, Integer progress, Integer numSteps) {
-    ZveloProgressDialog dialog = (ZveloProgressDialog) getDialog();
+    RubixProgressDialog dialog = (RubixProgressDialog) getDialog();
     if (dialog == null) {
       return;
     }

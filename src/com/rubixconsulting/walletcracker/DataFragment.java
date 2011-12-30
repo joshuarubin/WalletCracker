@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.zvelo.walletcracker.R;
-
 import android.app.ListFragment;
 import android.os.AsyncTask;
 import android.os.Bundle;

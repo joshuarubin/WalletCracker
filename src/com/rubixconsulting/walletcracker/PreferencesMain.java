@@ -2,8 +2,6 @@ package com.rubixconsulting.walletcracker;
 
 import java.util.List;
 
-import com.zvelo.walletcracker.R;
-
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.AsyncTask;

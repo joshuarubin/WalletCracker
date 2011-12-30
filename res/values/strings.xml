@@ -68,14 +68,14 @@
   <integer name="ga_dispatchPeriod">5</integer>
   <bool name="ga_auto_activity_tracking">true</bool>
   <string name="error_dialog_ok">OK</string>
-  <string name="copyright">© 2012 zvelo, Inc.</string>
-  <string name="email">jrubin@zvelo.com</string>
+  <string name="copyright">© 2012 Rubix Consulting, Inc.</string>
+  <string name="email">joshua@rubixconsulting.com</string>
   <string name="licenses">Licenses</string>
   <string name="allrights">All rights reserved</string>
   <string name="license">Licensed under the terms of the GPLv3</string>
   <string name="seelicenses">Click \"Licenses\" in menu\nfor more licensing details</string>
-  <color name="zvelo_dark_blue">#FF072C3C</color>
-  <color name="zvelo_soft_gray">#FFD6D6D6</color>
-  <color name="zvelo_blue_text">#FF0077B2</color>
-  <color name="zvelo_text">#FF54514F</color>
+  <color name="rubix_dark_blue">#FF072C3C</color>
+  <color name="rubix_soft_gray">#FFD6D6D6</color>
+  <color name="rubix_blue_text">#FF0077B2</color>
+  <color name="rubix_text">#FF54514F</color>
 </resources>

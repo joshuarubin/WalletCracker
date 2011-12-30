@@ -1,6 +1,6 @@
-package zvelo;
+package rubixconsulting;
 
-option java_package = "com.zvelo.walletcracker";
+option java_package = "com.rubixconsulting.walletcracker";
 option java_outer_classname = "GoogleWalletProtos";
 
 message DeviceInfo {

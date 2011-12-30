@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import com.google.android.apps.analytics.easytracking.TrackedActivity;
-import com.zvelo.walletcracker.R;
 
 import android.os.Bundle;
 import android.util.Log;

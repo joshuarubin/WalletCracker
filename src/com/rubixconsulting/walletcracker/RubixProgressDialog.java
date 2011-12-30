@@ -3,12 +3,12 @@ package com.rubixconsulting.walletcracker;
 import android.app.ProgressDialog;
 import android.content.Context;
 
-public class ZveloProgressDialog extends ProgressDialog {
-  public ZveloProgressDialog(Context context) {
+public class RubixProgressDialog extends ProgressDialog {
+  public RubixProgressDialog(Context context) {
     super(context);
   }
 
-  public ZveloProgressDialog(Context context, int theme) {
+  public RubixProgressDialog(Context context, int theme) {
     super(context, theme);
   }
 

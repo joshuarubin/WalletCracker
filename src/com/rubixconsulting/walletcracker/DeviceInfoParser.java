@@ -13,7 +13,6 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.rubixconsulting.walletcracker.GoogleWalletProtos.DeviceInfo;
-import com.zvelo.walletcracker.R;
 
 import android.content.Context;
 import android.content.SharedPreferences;

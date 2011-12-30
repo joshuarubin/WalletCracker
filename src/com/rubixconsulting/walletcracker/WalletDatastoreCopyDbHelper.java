@@ -1,7 +1,5 @@
 package com.rubixconsulting.walletcracker;
 
-import com.zvelo.walletcracker.R;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;

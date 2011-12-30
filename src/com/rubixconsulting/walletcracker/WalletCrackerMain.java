@@ -4,7 +4,6 @@ import com.google.android.apps.analytics.easytracking.TrackedActivity;
 import com.rubixconsulting.walletcracker.BGLoader.Progress;
 import com.rubixconsulting.walletcracker.BGLoader.Status;
 import com.viewpagerindicator.TitlePageIndicator;
-import com.zvelo.walletcracker.R;
 
 import android.app.DialogFragment;
 import android.app.Fragment;
