@@ -20,7 +20,7 @@ public class DataFragment extends ListFragment implements WalletListener {
 
   protected TextView statusView;
   protected SimpleAdapter listAdapter;
-  protected List<Map<String, String>> listData;
+  protected List<Map<String, ObscurableString>> listData;
 
   @Override public void walletProgress(BGLoader.Progress progress, Integer numSteps) {
     clear();
@@ -46,13 +46,8 @@ public class DataFragment extends ListFragment implements WalletListener {
   @Override public void onActivityCreated(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    // savedInstanceState could be null
-    if (savedInstanceState != null) {
-      // TODO
-    }
-
     statusView = (TextView) getActivity().findViewById(android.R.id.empty);
-    listData = new ArrayList<Map<String, String>>();
+    listData = new ArrayList<Map<String, ObscurableString>>();
     listAdapter = new SimpleAdapter(
         getActivity(),
         listData,
@@ -60,14 +55,14 @@ public class DataFragment extends ListFragment implements WalletListener {
         new String[] {"title", "value"},
         new int[] {R.id.title,
                    R.id.value});
-    setListAdapter(listAdapter);
 
-    rebuild(false);
+    setListAdapter(listAdapter);
 
     Log.i(TAG, "onActivityCreated");
   }
 
   @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    Log.i(TAG, "onCreateView");
     return inflater.inflate(R.layout.datalist, container, false);
   }
 
@@ -87,5 +82,10 @@ public class DataFragment extends ListFragment implements WalletListener {
     super.onResume();
     Log.i(TAG, "onResume");
     BGLoader.addListener(this);
+    if (listData.size() == 0) {
+      rebuild(false);
+    }
+    // force an update in case obscurable strings need to be changed due to preference change
+    listAdapter.notifyDataSetChanged();
   }
 }

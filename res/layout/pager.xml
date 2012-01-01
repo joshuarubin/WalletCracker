@@ -8,10 +8,29 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content" />
 
-  <android.support.v4.view.ViewPager
-    android:id="@+id/pager"
-    android:layout_width="match_parent"
-    android:layout_height="0dip"
-    android:layout_weight="1" />
+  <FrameLayout
+      android:id="@+id/pagerFrame"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent" >
+
+      <ImageView
+          android:id="@+id/rubixLogo"
+          android:layout_width="300dp"
+          android:layout_height="125dp"
+          android:layout_gravity="center_horizontal"
+          android:layout_marginTop="75dp"
+          android:alpha="0"
+          android:contentDescription="@string/logo_description"
+          android:scaleType="centerInside"
+          android:src="@drawable/rubix_logo"
+          android:visibility="invisible" />
+
+      <android.support.v4.view.ViewPager
+          android:id="@+id/pager"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+      </android.support.v4.view.ViewPager>
+
+  </FrameLayout>
 
 </LinearLayout>

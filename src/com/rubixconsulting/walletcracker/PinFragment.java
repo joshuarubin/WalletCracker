@@ -43,15 +43,8 @@ public class PinFragment extends Fragment implements WalletListener {
   @Override public void onActivityCreated(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    // savedInstanceState could be null
-    if (savedInstanceState != null) {
-      // TODO
-    }
-
     pinValue = (TextView) getActivity().findViewById(R.id.pinValue);
     dataView = getActivity().findViewById(R.id.pinData);
-
-    rebuild(false);
 
     Log.i(TAG, "onActivityCreated");
   }
@@ -63,6 +56,7 @@ public class PinFragment extends Fragment implements WalletListener {
   }
 
   @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    Log.i(TAG, "onCreateView");
     return inflater.inflate(R.layout.pin, container, false);
   }
 
@@ -76,5 +70,8 @@ public class PinFragment extends Fragment implements WalletListener {
     super.onResume();
     Log.i(TAG, "onResume");
     BGLoader.addListener(this);
+    if (dataView.getVisibility() == View.GONE) {
+      rebuild(false);
+    }
   }
 }

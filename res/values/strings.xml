@@ -78,4 +78,14 @@
   <color name="rubix_soft_gray">#FFD6D6D6</color>
   <color name="rubix_blue_text">#FF0077B2</color>
   <color name="rubix_text">#FF54514F</color>
+  <string-array name="obscurable_fields">
+      <item >wallet_uuid</item>
+      <item >gaia_account</item>
+      <item >originator_id</item>
+      <item >local_id</item>
+      <item >android_id</item>
+      <item >cplc</item>
+  </string-array>
+  <string name="logo_description">Rubix Consulting, Inc. Logo</string>
+  <string name="rubix_url">http://rubixconsulting.com</string>
 </resources>

@@ -6,10 +6,12 @@
   android:padding="20dip"
   android:orientation="vertical" >
 
-    <TextView
-      android:id="@+id/licenseCopy"
-      android:typeface="monospace"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content" />
+  <TextView
+    android:id="@+id/licenseCopy"
+    android:typeface="monospace"
+    android:autoLink="all"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:textSize="12sp"/>
 
 </ScrollView>

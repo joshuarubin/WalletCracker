@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.view.ContextThemeWrapper;
 
 public class ProgressDialogFragment extends DialogFragment {
   static public final String TAG = "ProgressDialogFragment";
@@ -28,8 +27,7 @@ public class ProgressDialogFragment extends DialogFragment {
     final Integer progress = getArguments().getInt("progress");
     final Integer numSteps = getArguments().getInt("numSteps");
 
-    final ContextThemeWrapper wrap = new ContextThemeWrapper(getActivity(), R.style.dialogStyle);
-    RubixProgressDialog dialog = new RubixProgressDialog(wrap);
+    RubixProgressDialog dialog = new RubixProgressDialog(getActivity());
 
     setCancelable(false);
     dialog.setTitle(R.string.loading);

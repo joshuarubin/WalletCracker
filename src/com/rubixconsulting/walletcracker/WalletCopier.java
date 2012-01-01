@@ -1,11 +1,13 @@
 package com.rubixconsulting.walletcracker;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import android.content.Context;
@@ -39,14 +41,16 @@ public final class WalletCopier extends ExecuteAsRootBase {
 
   private void copyFile(InputStream in, FileDescriptor out) {
     try {
+      BufferedReader r = new BufferedReader(new InputStreamReader(in));
       FileWriter rootcopy_out = new FileWriter(out);
 
-      int c;
-      while ((c = in.read()) != -1) {
-        rootcopy_out.write(c);
+      String line;
+      while ((line = r.readLine()) != null) {
+        rootcopy_out.write(line);
+        rootcopy_out.write("\n");
       }
 
-      in.close();
+      r.close();
       rootcopy_out.close();
     } catch (IOException e) {
       Log.e(TAG, "io error: "+e.getMessage());
