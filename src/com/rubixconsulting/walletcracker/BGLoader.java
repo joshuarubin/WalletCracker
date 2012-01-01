@@ -42,7 +42,6 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
     }
   }
 
-  // TODO: implement event based listener removal on all clients
   static public void removeListener(WalletListener listener) {
     synchronized(_listeners) {
       _listeners.remove(listener);

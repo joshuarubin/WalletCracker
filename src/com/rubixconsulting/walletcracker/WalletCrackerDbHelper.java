@@ -15,7 +15,7 @@ public class WalletCrackerDbHelper extends SQLiteOpenHelper {
   public static final String TABLE_PIN_CACHE = "pin_cache";
   public static final String DATABASE_NAME = "WalletCracker";
   public static final Integer PIN_ERROR = -1;
-  private static final int DATABASE_VERSION = 1;
+  private static final int DATABASE_VERSION = 4;
   protected static final String COLUMN_ID   = "id";
   protected static final String COLUMN_SALT = "salt";
   protected static final String COLUMN_HASH = "hash";
@@ -24,10 +24,14 @@ public class WalletCrackerDbHelper extends SQLiteOpenHelper {
                                          +  COLUMN_ID   + " INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
                                          +  COLUMN_SALT + " INTEGER NOT NULL CHECK (" + COLUMN_SALT + " > 0),"
                                          +  COLUMN_HASH + " TEXT NOT NULL CHECK (" + COLUMN_HASH + " <> ''),"
-                                         +  COLUMN_PIN  + " INTEGER NOT NULL CHECK (" + COLUMN_PIN + " > 0),"
+                                         +  COLUMN_PIN  + " INTEGER NOT NULL,"
                                          +  "UNIQUE (" + COLUMN_SALT + ", " + COLUMN_HASH + ", " + COLUMN_PIN + ")"
                                          + ")"};
-  protected static String upgradeSql[] = {};
+  protected static String upgradeSql[][] = {
+                                             {}, // version 1 to 2
+                                             {}, // version 2 to 3
+                                             {"DROP TABLE "+TABLE_PIN_CACHE, createSql[0]} // version 3 to 4
+                                           };
   protected final String TAG = this.getClass().getSimpleName();
 
   public WalletCrackerDbHelper(Context context) {
@@ -37,6 +41,7 @@ public class WalletCrackerDbHelper extends SQLiteOpenHelper {
   private void execMultipleSQL(SQLiteDatabase db, String[] sql) {
     for (String s : sql) {
       if (s.trim().length() > 0) {
+        Log.d(TAG, "sql: "+s);
         db.execSQL(s);
       }
     }
@@ -57,16 +62,19 @@ public class WalletCrackerDbHelper extends SQLiteOpenHelper {
   }
 
   @Override public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-    Log.i(TAG, "Upgrading database "+DATABASE_NAME+" from "+oldVersion+" to "+newVersion);
+    Log.i(TAG, "Upgrading database "+DATABASE_NAME+" from version "+oldVersion+" to version "+newVersion);
     db.beginTransaction();
     try {
-      execMultipleSQL(db, upgradeSql);
+      final Integer max = Math.min(upgradeSql.length, newVersion - 1);
+      for (Integer i = oldVersion-1; i < max; ++i) {
+        execMultipleSQL(db, upgradeSql[i]);
+      }
       db.setTransactionSuccessful();
     } catch (SQLException e) {
-      Log.e("Error upgrading database", e.toString());
+      Log.e("Error upgrading database: ", e.toString());
     } finally {
       db.endTransaction();
-      Log.i(TAG, "Successfully upgraded database "+DATABASE_NAME);
+      Log.i(TAG, "Successfully upgraded database "+DATABASE_NAME+" to version "+newVersion);
     }
   }
 

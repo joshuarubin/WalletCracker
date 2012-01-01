@@ -1,27 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <style name="rubix" parent="@android:style/Theme.Holo.Light.DarkActionBar">
+  <style name="rubix" parent="@android:style/Theme.Holo.Light">
     <item name="vpiTitlePageIndicatorStyle">@style/titlePageIndicator</item>
-    <item name="android:actionBarStyle">@style/actionBarStyle</item>
   </style>
 
   <style name="titlePageIndicator">
-    <item name="android:background">@color/rubix_soft_gray</item>
-    <item name="footerColor">@color/rubix_dark_blue</item>
+    <item name="android:background">@android:drawable/title_bar</item>
+    <item name="footerColor">@android:color/darker_gray</item>
     <item name="footerLineHeight">1dp</item>
     <item name="footerIndicatorHeight">3dp</item>
     <item name="footerIndicatorStyle">underline</item>
-    <item name="textColor">@color/rubix_text</item>
-    <item name="selectedColor">@color/rubix_blue_text</item>
+    <item name="textColor">@android:color/primary_text_dark</item>
+    <item name="selectedColor">@android:color/primary_text_dark</item>
     <item name="selectedBold">true</item>
-  </style>
-
-  <style name="actionBarStyle" parent="@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
-    <item name="android:background">@color/rubix_dark_blue</item>
-    <item name="android:displayOptions">useLogo|showHome</item>
-  </style>
-
-  <style name="dialogStyle">
-    <item name="android:textColor">@color/rubix_blue_text</item>
   </style>
 </resources>

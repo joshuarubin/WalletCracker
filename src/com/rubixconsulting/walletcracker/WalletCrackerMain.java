@@ -5,6 +5,7 @@ import com.rubixconsulting.walletcracker.BGLoader.Progress;
 import com.rubixconsulting.walletcracker.BGLoader.Status;
 import com.viewpagerindicator.TitlePageIndicator;
 
+import android.animation.Animator;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -16,16 +17,34 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 
-public class WalletCrackerMain extends TrackedActivity implements WalletListener {
+public class WalletCrackerMain extends TrackedActivity implements WalletListener, ViewPager.OnPageChangeListener {
   protected final String TAG = this.getClass().getSimpleName();
   protected final String RESTORE = ", can restore state";
+  protected ViewPagerAdapter adapter;
+  private Boolean initialized = false;
+  private Integer currentPage = 0;
+  private LogoAnimationState logoAnimationState = LogoAnimationState.STOPPED;
+  private View logoView;
+  static protected final Float MAX_LOGO_ALPHA = 0.05f;
+  static protected final Float MIN_LOGO_ALPHA = 0.0f;
+  static protected final Long ANIMATION_DURATION = 1000l;
+
+  enum LogoAnimationState {
+    STOPPED,
+    VISIBLE,
+    FADING_IN,
+    FADING_OUT,
+    HIDDEN,
+    CANCELED
+  }
 
   @Override public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.pager);
 
-    ViewPagerAdapter adapter = new ViewPagerAdapter(this);
+    adapter = new ViewPagerAdapter(this);
     adapter.addTab(R.string.pin,   PinFragment.class,   null);
     adapter.addTab(R.string.data,  DataFragment.class,  null);
     adapter.addTab(R.string.about, AboutFragment.class, null);
@@ -34,25 +53,11 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
     TitlePageIndicator indicator = (TitlePageIndicator) findViewById(R.id.titles);
     pager.setAdapter(adapter);
     indicator.setViewPager(pager);
+    indicator.setOnPageChangeListener(this);
 
-    rebuild(false);
-
-    // savedInstanceState could be null
-    if (savedInstanceState != null) {
-      // TODO
-    }
+    logoView = findViewById(R.id.rubixLogo);
 
     Log.i(TAG, "onCreate");
-  }
-
-  @Override protected void onRestart() {
-    super.onRestart();
-    Log.i(TAG, "onRestart");
-  }
-
-  @Override protected void onStart() {
-    super.onStart();
-    Log.i(TAG, "onStart");
   }
 
   @Override protected void onResume() {
@@ -61,29 +66,22 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
     BGLoader.addListener(this);
   }
 
+  private void hideLogo() {
+    logoView.setVisibility(View.INVISIBLE);
+    logoView.setAlpha(MIN_LOGO_ALPHA);
+    logoAnimationState = LogoAnimationState.HIDDEN;
+  }
+
   @Override protected void onPause() {
     super.onPause();
     Log.i(TAG, "onPause" + (isFinishing() ? "Finishing" : ""));
     BGLoader.removeListener(this);
-  }
-
-  @Override protected void onStop() {
-    super.onStop();
-    Log.i(TAG, "onStop");
-  }
-
-  @Override protected void onDestroy() {
-    super.onDestroy();
-    Log.i(TAG, "onDestroy" + Integer.toString(getChangingConfigurations(), 16));
-  }
-
-  @Override protected void onSaveInstanceState(Bundle outState) {
-    super.onSaveInstanceState(outState);
-    Log.i(TAG, "onSaveInstanceState");
+    hideDialog(ProgressDialogFragment.TAG);
   }
 
   @Override protected void onRestoreInstanceState(Bundle savedState) {
     super.onRestoreInstanceState(savedState);
+    Log.i(TAG, "onRestoreInstanceState" + (null == savedState ? "" : RESTORE));
 
     Object oldTaskObject = getLastNonConfigurationInstance();
     if (oldTaskObject != null) {
@@ -92,25 +90,33 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
       assert oldTask == currentTask;
     }
 
-    Log.i(TAG, "onRestoreInstanceState" + (null == savedState ? "" : RESTORE));
-  }
-
-  @Override protected void onPostCreate(Bundle savedState) {
-    super.onPostCreate(savedState);
-    if (savedState != null ) {
-      // TODO
+    initialized = savedState.getBoolean("initialized", false);
+    currentPage = savedState.getInt("currentPage", 0);
+    String tmpAnimState = savedState.getString("logoAnimationState");
+    if (tmpAnimState != null) {
+      for(LogoAnimationState state : LogoAnimationState.values()) {
+        if (state.toString().equals(tmpAnimState)) {
+          logoAnimationState = state;
+          break;
+        }
+      }
     }
-    Log.i(TAG, "onPostCreate" + (savedState == null ? "" : RESTORE));
+
+    switch (logoAnimationState) {
+      case FADING_IN:
+      case VISIBLE:
+        logoView.setAlpha(MAX_LOGO_ALPHA);
+        logoView.setVisibility(View.VISIBLE);
+        break;
+    }
   }
 
-  @Override protected void onPostResume() {
-    super.onPostResume();
-    Log.i(TAG, "onPostResume");
-  }
-
-  @Override protected void onUserLeaveHint() {
-    super.onUserLeaveHint();
-    Log.i(TAG, "onUserLeaveHint");
+  @Override protected void onSaveInstanceState(Bundle outState) {
+    super.onSaveInstanceState(outState);
+    Log.d(TAG, "onSaveInstanceState");
+    outState.putBoolean("initialized", initialized);
+    outState.putInt("currentPage", currentPage);
+    outState.putString("logoAnimationState", logoAnimationState.toString());
   }
 
   @Override public boolean onCreateOptionsMenu(Menu menu) {
@@ -126,7 +132,7 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
     switch (item.getItemId()) {
       case R.id.rebuild:
         Log.i(TAG, "user asked for rebuild");
-        rebuild(true);
+        forceRebuild();
         break;
       case R.id.prefs:
         Log.i(TAG, "user asked for prefs");
@@ -140,9 +146,9 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
     return true;
   }
 
-  private void rebuild(Boolean force) {
-    Log.i(TAG, "rebuild, force: "+force);
-    new BGLoader().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, force);
+  private void forceRebuild() {
+    Log.i(TAG, "force rebuild");
+    new BGLoader().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, true);
   }
 
   private void showError(Integer messageId) {
@@ -208,6 +214,10 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
     hideDialog(ProgressDialogFragment.TAG);
 
     switch (result) {
+      case SUCCESS:
+        initialized = true;
+        animateLogo();
+        break;
       case NO_WALLET:
         showError(R.string.wallet_not_found);
         break;
@@ -236,5 +246,95 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
     }
 
     showProgress(stringId, ((progress == null) ? null : progress.ordinal()), numSteps);
+  }
+
+  @Override public void onPageScrollStateChanged(int state) {
+    // do nothing
+  }
+
+  @Override public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+    // do nothing
+  }
+
+  @Override public void onPageSelected(int position) {
+    currentPage = position;
+    animateLogo();
+  }
+
+  private void animateLogo() {
+    final Fragment item = adapter.getItem(currentPage);
+
+    if (!initialized) {
+      return;
+    } else if (item instanceof AboutFragment) {
+      logoFadeOut();
+    } else {
+      logoFadeIn();
+    }
+  }
+
+  private void logoFadeOut() {
+    switch (logoAnimationState) {
+      case FADING_OUT:
+      case HIDDEN:
+        // logo is already fading out or invisible
+        return;
+      case FADING_IN:
+        // stop the logo from fading in
+        logoView.animate().cancel();
+        break;
+    }
+
+    logoAnimationState = LogoAnimationState.FADING_OUT;
+    logoView.animate().setDuration(ANIMATION_DURATION).alpha(MIN_LOGO_ALPHA).setListener(new fadeOutListener()).start();
+  }
+
+  private void logoFadeIn() {
+    switch (logoAnimationState) {
+      case FADING_IN:
+      case VISIBLE:
+        // logo is already fading in or visible
+        return;
+      case FADING_OUT:
+        // stop the logo from fading out
+        logoView.animate().cancel();
+        break;
+    }
+
+    if (logoView.getVisibility() != View.VISIBLE) {
+      logoView.setAlpha(MIN_LOGO_ALPHA);
+      logoView.setVisibility(View.VISIBLE);
+    }
+
+    logoAnimationState = LogoAnimationState.FADING_IN;
+    logoView.animate().setDuration(ANIMATION_DURATION).alpha(MAX_LOGO_ALPHA).setListener(new fadeInListener()).start();
+  }
+
+  abstract private class fadeListener implements Animator.AnimatorListener {
+    @Override public void onAnimationCancel(Animator animation) {
+      logoAnimationState = LogoAnimationState.CANCELED;
+    }
+
+    @Override public void onAnimationRepeat(Animator animation) {
+    }
+
+    @Override public void onAnimationStart(Animator animation) {
+    }
+  }
+
+  private class fadeOutListener extends fadeListener {
+    @Override public void onAnimationEnd(Animator animation) {
+      if (logoAnimationState != LogoAnimationState.CANCELED) {
+        hideLogo();
+      }
+    }
+  }
+
+  private class fadeInListener extends fadeListener {
+    @Override public void onAnimationEnd(Animator animation) {
+      if (logoAnimationState != LogoAnimationState.CANCELED) {
+        logoAnimationState = LogoAnimationState.VISIBLE;
+      }
+    }
   }
 }

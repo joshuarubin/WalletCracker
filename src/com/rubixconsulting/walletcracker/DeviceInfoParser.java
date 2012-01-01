@@ -15,7 +15,6 @@ import com.google.protobuf.Message;
 import com.rubixconsulting.walletcracker.GoogleWalletProtos.DeviceInfo;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -24,7 +23,7 @@ public class DeviceInfoParser {
   protected final static String TAG = "DeviceInfoParser";
   protected DeviceInfo _deviceInfo;
   protected Context _context;
-  protected List<Map<String, String>> _dataCache;
+  protected List<Map<String, ObscurableString>> _dataCache;
   private static Boolean _pinCacheLock = false;
 
   public DeviceInfoParser(Context context, byte deviceInfoRaw[]) {
@@ -37,12 +36,15 @@ public class DeviceInfoParser {
     }
   }
 
-  public List<Map<String, String>> getData() {
+  public List<Map<String, ObscurableString>> getData() {
     if (_dataCache != null) {
       return _dataCache;
     }
 
-    List<Map<String, String>> data = addMessage("", _deviceInfo);
+    ObscurableString.setObscurableFields(_context.getResources().getStringArray(R.array.obscurable_fields));
+    ObscurableString.setObscure(PreferenceManager.getDefaultSharedPreferences(_context).getBoolean("demo_mode", false));
+
+    List<Map<String, ObscurableString>> data = addMessage("", _deviceInfo);
 
     _dataCache = data;
     return data;
@@ -117,15 +119,15 @@ public class DeviceInfoParser {
     return fieldName;
   }
 
-  private List<Map<String, String>>addMessage(String prefix, Message message) {
-    List<Map<String, String>> data = new ArrayList<Map<String, String>>();
+  private List<Map<String, ObscurableString>>addMessage(String prefix, Message message) {
+    List<Map<String, ObscurableString>> data = new ArrayList<Map<String, ObscurableString>>();
 
     for (Map.Entry<FieldDescriptor, Object> entry : message.getAllFields().entrySet()) {
       final String fieldName = entry.getKey().getName();
       final String decoded = decodeFieldName(fieldName);
-      final String title = (prefix.equals("") ? "" : prefix + " => ") + decoded;
+      final ObscurableString title = new ObscurableString((prefix.equals("") ? "" : prefix + " => ") + decoded);
 
-      Map<String, String> ret = new HashMap<String, String>(2);
+      Map<String, ObscurableString> ret = new HashMap<String, ObscurableString>(2);
       ret.put("title", title);
 
       if (
@@ -135,7 +137,7 @@ public class DeviceInfoParser {
           fieldName.equals("setup_completion_time_in_millis")
       ) {
         Date d = new Date((Long) entry.getValue());
-        ret.put("value", obscureValue(fieldName, d.toString()));
+        ret.put("value", new ObscurableString(fieldName, d.toString()));
         data.add(ret);
       } else {
         switch (entry.getKey().getJavaType()) {
@@ -145,44 +147,25 @@ public class DeviceInfoParser {
           case DOUBLE:
           case BOOLEAN:
           case STRING:
-            ret.put("value", obscureValue(fieldName, entry.getValue().toString()));
+            ret.put("value", new ObscurableString(fieldName, entry.getValue().toString()));
             data.add(ret);
             break;
           case ENUM:
-            ret.put("value", obscureValue(fieldName, ((EnumValueDescriptor) entry.getValue()).getName()));
+            ret.put("value", new ObscurableString(fieldName, ((EnumValueDescriptor) entry.getValue()).getName()));
             data.add(ret);
             break;
           case BYTE_STRING:
-            ret.put("value", obscureValue(fieldName, ((ByteString) entry.getValue()).toStringUtf8()));
+            ret.put("value", new ObscurableString(fieldName, ((ByteString) entry.getValue()).toStringUtf8()));
             data.add(ret);
             break;
           case MESSAGE:
-            data.addAll(addMessage(title, (Message) entry.getValue()));
+            data.addAll(addMessage(title.toString(), (Message) entry.getValue()));
             break;
         }
       }
     }
 
     return data;
-  }
-
-  private String obscureValue(String fieldName, String value) {
-    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(_context);
-    if (!preferences.getBoolean("demo_mode", false)) {
-      return value;
-    }
-
-    if (fieldName.equals("wallet_uuid") ||
-        fieldName.equals("gaia_account") ||
-        fieldName.equals("originator_id") ||
-        fieldName.equals("local_id") ||
-        fieldName.equals("android_id") ||
-        fieldName.equals("cplc")
-    ) {
-      return value.replaceAll("[0-9a-zA-Z]", "X");
-    }
-
-    return value;
   }
 
   private Integer getCachedPin(WalletCrackerDbHelper crackerDb, Long salt, String hash) {
