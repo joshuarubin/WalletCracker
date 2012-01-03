@@ -19,7 +19,7 @@
   <string name="bad_pin_attempts">Bad PIN Attempts</string>
   <string name="pin_expired">PIN Expired</string>
   <string name="gaia_account">Google Wallet Account</string>
-  <string name="c2dmreginfo">Crossbar Registration</string>
+  <string name="c2dmreginfo">C2DM Registration</string>
   <string name="virgin">Virgin</string>
   <string name="setup_complete">Setup Complete</string>
   <string name="id">ID</string>

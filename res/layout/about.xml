@@ -9,14 +9,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
+        android:paddingBottom="20dp"
+        android:paddingTop="20dp"
         android:orientation="vertical" >
 
         <ImageView
             android:id="@+id/rubixLogo"
             android:layout_width="200dp"
             android:layout_height="100dp"
-            android:layout_marginBottom="20dp"
-            android:layout_marginTop="20dp"
             android:contentDescription="@string/logo_description"
             android:scaleType="centerInside"
             android:src="@drawable/rubix_logo" />
@@ -24,7 +24,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="20dp"
             android:text="@string/copyright" />
 
         <TextView
