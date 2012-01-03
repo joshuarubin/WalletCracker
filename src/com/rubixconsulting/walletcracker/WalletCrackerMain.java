@@ -20,13 +20,13 @@ import android.view.MenuItem;
 import android.view.View;
 
 public class WalletCrackerMain extends TrackedActivity implements WalletListener, ViewPager.OnPageChangeListener {
-  protected final String TAG = this.getClass().getSimpleName();
+  static protected final String TAG = WalletCrackerMain.class.getSimpleName();
   protected final String RESTORE = ", can restore state";
   protected ViewPagerAdapter adapter;
   private Boolean initialized = false;
-  private Integer currentPage = 0;
   private LogoAnimationState logoAnimationState = LogoAnimationState.STOPPED;
   private View logoView;
+  private ViewPager pager;
   static protected final Float MAX_LOGO_ALPHA = 0.05f;
   static protected final Float MIN_LOGO_ALPHA = 0.0f;
   static protected final Long ANIMATION_DURATION = 1000l;
@@ -49,7 +49,7 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
     adapter.addTab(R.string.data,  DataFragment.class,  null);
     adapter.addTab(R.string.about, AboutFragment.class, null);
 
-    ViewPager pager = (ViewPager) findViewById(R.id.pager);
+    pager = (ViewPager) findViewById(R.id.pager);
     TitlePageIndicator indicator = (TitlePageIndicator) findViewById(R.id.titles);
     pager.setAdapter(adapter);
     indicator.setViewPager(pager);
@@ -58,6 +58,12 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
     logoView = findViewById(R.id.rubixLogo);
 
     Log.i(TAG, "onCreate");
+
+    if (savedInstanceState != null) {
+      restoreState(savedInstanceState);
+    } else {
+      Log.i(TAG, "no state to restore");
+    }
   }
 
   @Override protected void onResume() {
@@ -79,24 +85,23 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
     hideDialog(ProgressDialogFragment.TAG);
   }
 
-  @Override protected void onRestoreInstanceState(Bundle savedState) {
-    super.onRestoreInstanceState(savedState);
-    Log.i(TAG, "onRestoreInstanceState" + (null == savedState ? "" : RESTORE));
+  protected void restoreState(Bundle savedState) {
+    final Bundle state = savedState.getBundle(TAG);
 
-    Object oldTaskObject = getLastNonConfigurationInstance();
-    if (oldTaskObject != null) {
-      int oldTask = ((Integer) oldTaskObject).intValue();
-      int currentTask = getTaskId();
-      assert oldTask == currentTask;
+    if (state == null) {
+      return;
     }
 
-    initialized = savedState.getBoolean("initialized", false);
-    currentPage = savedState.getInt("currentPage", 0);
-    String tmpAnimState = savedState.getString("logoAnimationState");
+    initialized = state.getBoolean("initialized", false);
+
+    Log.d(TAG, "restoring currentItem: "+state.getInt("currentItem"));
+    pager.setCurrentItem(state.getInt("currentItem", 0), false);
+
+    String tmpAnimState = state.getString("logoAnimationState");
     if (tmpAnimState != null) {
-      for(LogoAnimationState state : LogoAnimationState.values()) {
-        if (state.toString().equals(tmpAnimState)) {
-          logoAnimationState = state;
+      for(LogoAnimationState animState : LogoAnimationState.values()) {
+        if (animState.toString().equals(tmpAnimState)) {
+          logoAnimationState = animState;
           break;
         }
       }
@@ -113,10 +118,15 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
 
   @Override protected void onSaveInstanceState(Bundle outState) {
     super.onSaveInstanceState(outState);
+
+    final Bundle state = new Bundle();
     Log.d(TAG, "onSaveInstanceState");
-    outState.putBoolean("initialized", initialized);
-    outState.putInt("currentPage", currentPage);
-    outState.putString("logoAnimationState", logoAnimationState.toString());
+    Log.d(TAG, "saving currentItem: "+pager.getCurrentItem());
+    state.putBoolean("initialized", initialized);
+    state.putInt("currentItem", pager.getCurrentItem());
+    state.putString("logoAnimationState", logoAnimationState.toString());
+
+    outState.putBundle(TAG, state);
   }
 
   @Override public boolean onCreateOptionsMenu(Menu menu) {
@@ -257,12 +267,11 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
   }
 
   @Override public void onPageSelected(int position) {
-    currentPage = position;
     animateLogo();
   }
 
   private void animateLogo() {
-    final Fragment item = adapter.getItem(currentPage);
+    final Fragment item = adapter.getItem(pager.getCurrentItem());
 
     if (!initialized) {
       return;

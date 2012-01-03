@@ -11,7 +11,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoader.Status> {
-  protected final String TAG = this.getClass().getSimpleName();
+  static protected final String TAG = BGLoader.class.getSimpleName();
   static private Set<WalletListener> _listeners = new HashSet<WalletListener>();
   static private Boolean _loadLock = false;
   static private Boolean _loading = false;
