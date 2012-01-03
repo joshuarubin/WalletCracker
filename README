@@ -1,1 +1,7 @@
-Requires Android 3.2 or Greater
+For security researchers only.
+
+This app demonstrates a vulnerability in Google Wallet that makes it possible to reveal the user's PIN. This defeats all of the security provided by the Secure Element in the NFC device.
+
+This app requires root access and a working installation of Google Wallet (which requires a phone with NFC). It also requires at least Android 3.2, so Nexus S users will have to wait until their phone's are upgraded.
+
+The source code for this app is available at https://github.com/rubixconsulting/WalletCracker and is licensed under the terms of the GPLv3.
