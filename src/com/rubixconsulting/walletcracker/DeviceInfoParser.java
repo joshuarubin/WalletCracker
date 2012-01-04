@@ -13,12 +13,21 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.rubixconsulting.walletcracker.GoogleWalletProtos.DeviceInfo;
+import com.rubixconsulting.walletcracker.GoogleWalletProtos.DeviceInfo.PinInfo;
 
 import android.content.Context;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class DeviceInfoParser {
+  static final public class Exception extends java.lang.Exception {
+    public Exception(String err) {
+      super(err);
+    }
+
+    private static final long serialVersionUID = 1L;
+  }
+
   protected final static String HEX_DIGITS = "0123456789abcdef";
   protected final static String TAG = "DeviceInfoParser";
   protected DeviceInfo _deviceInfo;
@@ -122,6 +131,10 @@ public class DeviceInfoParser {
   private List<Map<String, ObscurableString>>addMessage(String prefix, Message message) {
     List<Map<String, ObscurableString>> data = new ArrayList<Map<String, ObscurableString>>();
 
+    if (message == null) {
+      return data;
+    }
+
     for (Map.Entry<FieldDescriptor, Object> entry : message.getAllFields().entrySet()) {
       final String fieldName = entry.getKey().getName();
       final String decoded = decodeFieldName(fieldName);
@@ -219,9 +232,29 @@ public class DeviceInfoParser {
     return bruteForcedPin;
   }
 
-  public Integer crackPin() {
-    final Long salt = _deviceInfo.getPinInfo().getSalt();
-    final String hash = _deviceInfo.getPinInfo().getPinHash().toStringUtf8();
+  public Integer crackPin() throws Exception {
+    if (_deviceInfo == null) {
+      throw new Exception("Google Wallet device information could not be found");
+    }
+
+    final PinInfo pinInfo = _deviceInfo.getPinInfo();
+
+    if (pinInfo == null) {
+      throw new Exception("Pin information could not be found");
+    }
+
+    final Long salt = pinInfo.getSalt();
+
+    if (salt == null) {
+      throw new Exception("Salt could not be found");
+    }
+
+    final ByteString rawHash = pinInfo.getPinHash();
+    if (rawHash == null) {
+      throw new Exception("Hash could not be found");
+    }
+
+    final String hash = rawHash.toStringUtf8();
     WalletCrackerDbHelper crackerDb = null;
 
     try {

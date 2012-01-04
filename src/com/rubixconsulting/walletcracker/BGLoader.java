@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.rubixconsulting.walletcracker.DeviceInfoParser.Exception;
+
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -140,6 +142,9 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
         _parser = new DeviceInfoParser(context, walletDb.getDeviceInfo());
         _parser.crackPin();
       }
+    } catch (Exception e) {
+      // error cracking pin, ignore
+      Log.e(TAG, e.getMessage());
     } finally {
       if (walletDb != null) {
         walletDb.close();
