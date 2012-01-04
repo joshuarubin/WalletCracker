@@ -2,6 +2,7 @@ package com.rubixconsulting.walletcracker;
 
 import com.rubixconsulting.walletcracker.BGLoader.Progress;
 import com.rubixconsulting.walletcracker.BGLoader.Status;
+import com.rubixconsulting.walletcracker.DeviceInfoParser.Exception;
 
 import android.app.Fragment;
 import android.os.AsyncTask;
@@ -36,7 +37,16 @@ public class PinFragment extends Fragment implements WalletListener {
   }
 
   private void showData(DeviceInfoParser parser) {
-    pinValue.setText(DeviceInfoParser.formatPin(parser.crackPin()));
+    String value;
+    try {
+      final Integer pin = parser.crackPin();
+      value = DeviceInfoParser.formatPin(pin);
+    } catch (Exception e) {
+      // error cracking pin, ignore
+      Log.e(TAG, e.getMessage());
+      value = e.getMessage();
+    }
+    pinValue.setText(value);
     dataView.setVisibility(View.VISIBLE);
   }
 
