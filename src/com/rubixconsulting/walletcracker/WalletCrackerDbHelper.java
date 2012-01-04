@@ -15,14 +15,14 @@ public class WalletCrackerDbHelper extends SQLiteOpenHelper {
   public static final String TABLE_PIN_CACHE = "pin_cache";
   public static final String DATABASE_NAME = "WalletCracker";
   public static final Integer PIN_ERROR = -1;
-  private static final int DATABASE_VERSION = 4;
+  private static final int DATABASE_VERSION = 5;
   protected static final String COLUMN_ID   = "id";
   protected static final String COLUMN_SALT = "salt";
   protected static final String COLUMN_HASH = "hash";
   protected static final String COLUMN_PIN  = "pin";
   protected static String createSql[] = {"CREATE TABLE "+TABLE_PIN_CACHE+" ("
                                          +  COLUMN_ID   + " INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
-                                         +  COLUMN_SALT + " INTEGER NOT NULL CHECK (" + COLUMN_SALT + " > 0),"
+                                         +  COLUMN_SALT + " INTEGER NOT NULL,"
                                          +  COLUMN_HASH + " TEXT NOT NULL CHECK (" + COLUMN_HASH + " <> ''),"
                                          +  COLUMN_PIN  + " INTEGER NOT NULL,"
                                          +  "UNIQUE (" + COLUMN_SALT + ", " + COLUMN_HASH + ", " + COLUMN_PIN + ")"
@@ -30,7 +30,8 @@ public class WalletCrackerDbHelper extends SQLiteOpenHelper {
   protected static String upgradeSql[][] = {
                                              {}, // version 1 to 2
                                              {}, // version 2 to 3
-                                             {"DROP TABLE "+TABLE_PIN_CACHE, createSql[0]} // version 3 to 4
+                                             {"DROP TABLE "+TABLE_PIN_CACHE, createSql[0]}, // version 3 to 4
+                                             {"DROP TABLE "+TABLE_PIN_CACHE, createSql[0]} // version 4 to 5
                                            };
   protected final String TAG = this.getClass().getSimpleName();
 
@@ -114,8 +115,17 @@ public class WalletCrackerDbHelper extends SQLiteOpenHelper {
     }
   }
 
-  public void addPin(Long
-      salt, String hash, Integer pin) {
+  public void addPin(Long salt, String hash, Integer pin) {
+    Integer existing = getPin(salt, hash);
+    Log.i(TAG, "existing pin is: "+existing);
+    if (existing == pin) {
+      Log.i(TAG, "not adding pin, it already exists in cache");
+      return;
+    } else if (existing != null){
+      Log.e(TAG, "pin is already cached, but with a different value");
+      return;
+    }
+    Log.i(TAG, "inserting into pin cache salt: "+salt+" hash: "+hash+" pin: "+pin);
     ContentValues values = new ContentValues();
     values.put("salt", salt);
     values.put("hash", hash);
