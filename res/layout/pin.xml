@@ -1,31 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:gravity="center"
+  android:id="@+id/pinData"
+  android:orientation="vertical"
+  android:visibility="gone" >
+
+  <TextView
+    android:id="@+id/yourPinIs"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:gravity="center"
-    android:orientation="vertical" >
+    android:text="@string/your_pin_is"
+    android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <LinearLayout
-        android:id="@+id/pinData"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone" >
-
-        <TextView
-            android:id="@+id/yourPinIs"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/your_pin_is"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <TextView
-            android:id="@+id/pinValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-    </LinearLayout>
+  <TextView
+    android:id="@+id/pinValue"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:textAppearance="?android:attr/textAppearanceLarge" />
 
 </LinearLayout>
