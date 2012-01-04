@@ -1,4 +1,4 @@
-For security researchers only.
+For security researchers and demonstration purposes only.
 
 This app demonstrates a vulnerability in Google Wallet that makes it possible to reveal the user's PIN. This defeats all of the security provided by the Secure Element in the NFC device.
 
