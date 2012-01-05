@@ -1,10 +1,5 @@
 package com.rubixconsulting.walletcracker;
 
-import com.google.android.apps.analytics.easytracking.TrackedActivity;
-import com.rubixconsulting.walletcracker.BGLoader.Progress;
-import com.rubixconsulting.walletcracker.BGLoader.Status;
-import com.viewpagerindicator.TitlePageIndicator;
-
 import android.animation.Animator;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -18,6 +13,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+
+import com.google.android.apps.analytics.easytracking.TrackedActivity;
+import com.rubixconsulting.walletcracker.BGLoader.Progress;
+import com.rubixconsulting.walletcracker.BGLoader.Status;
+import com.viewpagerindicator.TitlePageIndicator;
 
 public class WalletCrackerMain extends TrackedActivity implements WalletListener, ViewPager.OnPageChangeListener {
   static protected final String TAG = WalletCrackerMain.class.getSimpleName();
