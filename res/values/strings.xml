@@ -6,9 +6,7 @@
   <string name="error">Error</string>
   <string name="loading_wallet">Loading data from Google Wallet&#8230;</string>
   <string name="package_google_wallet">com.google.android.apps.walletnfcrel</string>
-  <string name="init_success">Successfully Initialized&#8230;</string>
   <string name="root_not_found">This application requires root to function</string>
-  <string name="unknown_init_error">Unknown Initialization Error</string>
   <string name="wallet_db_path">/databases/walletDatastore</string>
   <string name="db_name">walletDatastoreCopy</string>
   <string name="script_rootcopy">rootcopy.sh</string>
@@ -59,9 +57,8 @@
   <string name="loading_root">Verifying root access&#8230;</string>
   <string name="loading_copying">Copying Google Wallet data&#8230;</string>
   <string name="loading_cracking">Cracking Google Wallet PIN&#8230;</string>
-  <string name="loaded">Loaded</string>
-  <string name="ga_api_key">UA-27966737-1</string>
-  <bool name="ga_debug">true</bool>
+  <string name="ga_api_key">UA&#8211;27966737&#8211;1</string>
+  <bool name="ga_debug">false</bool>
   <bool name="ga_dryRun">false</bool>
   <bool name="ga_anonymizeIp">false</bool>
   <integer name="ga_sampleRate">100</integer>
@@ -71,13 +68,8 @@
   <string name="copyright">© 2012 Rubix Consulting, Inc.</string>
   <string name="email">joshua@rubixconsulting.com</string>
   <string name="licenses">Licenses</string>
-  <string name="allrights">All rights reserved</string>
   <string name="license">Licensed under the terms of the GPLv3</string>
   <string name="seelicenses">Click \"Licenses\" in menu\nfor more licensing details</string>
-  <color name="rubix_dark_blue">#FF072C3C</color>
-  <color name="rubix_soft_gray">#FFD6D6D6</color>
-  <color name="rubix_blue_text">#FF0077B2</color>
-  <color name="rubix_text">#FF54514F</color>
   <string-array name="obscurable_fields">
       <item >wallet_uuid</item>
       <item >gaia_account</item>
@@ -101,4 +93,5 @@
   <string name="pref_acra_user_email_summary">Optional email address for follow ups</string>
   <string name="error_reporting_preferences">Error Reporting</string>
   <string name="error_reporting_preferences_summary">Control if and what gets sent in error reports</string>
+  <string name="unknown_version">Unknown App Version</string>
 </resources>
