@@ -20,6 +20,13 @@ public class PreferencesMain extends PreferenceActivity implements OnSharedPrefe
     }
   }
 
+  public static class ErrorReportingPreferences extends PreferenceFragment {
+    @Override public void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      addPreferencesFromResource(R.xml.error_reporting_preferences);
+    }
+  }
+
   @Override public void onBuildHeaders(List<Header> target) {
     super.onBuildHeaders(target);
     loadHeadersFromResource(R.xml.preference_headers, target);
