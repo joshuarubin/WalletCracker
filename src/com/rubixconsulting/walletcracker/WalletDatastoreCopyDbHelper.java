@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteQuery;
 
 public class WalletDatastoreCopyDbHelper extends SQLiteOpenHelper {
   public static final String TABLE_METADATA = "metadata";
-  private static final int DATABASE_VERSION = 15;
+  private static final int DATABASE_VERSION = 9999;
 
   public WalletDatastoreCopyDbHelper(Context context) {
     super(context, context.getString(R.string.db_name), null, DATABASE_VERSION);
