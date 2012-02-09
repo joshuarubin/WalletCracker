@@ -33,6 +33,7 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
     SUCCESS,
     NO_WALLET,
     NO_ROOT,
+    ERROR,
     PROGRESS_UPDATE_ONLY,
   }
 
@@ -139,7 +140,11 @@ public final class BGLoader extends AsyncTask<Object, BGLoader.Progress, BGLoade
       // crack the pin in the bg thread so it is cached in the ui thread
       walletDb = new WalletDatastoreCopyDbHelper(context);
       synchronized(_parserLock) {
-        _parser = new DeviceInfoParser(context, walletDb.getDeviceInfo());
+        byte[] di = walletDb.getDeviceInfo();
+        if (di == null) {
+          return Status.ERROR;
+        }
+        _parser = new DeviceInfoParser(context, di);
         _parser.crackPin();
       }
     } catch (Exception e) {

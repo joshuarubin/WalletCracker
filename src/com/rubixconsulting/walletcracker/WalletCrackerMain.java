@@ -234,6 +234,9 @@ public class WalletCrackerMain extends TrackedActivity implements WalletListener
       case NO_ROOT:
         showError(R.string.root_not_found);
         break;
+      case ERROR:
+        showError(R.string.unknown_error);
+        break;
     }
   }
 

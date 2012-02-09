@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteCursorDriver;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQuery;
 
@@ -54,6 +55,8 @@ public class WalletDatastoreCopyDbHelper extends SQLiteOpenHelper {
       c = (MetadataCursor) d.rawQueryWithFactory(new MetadataCursor.Factory(), sql, null, null);
       c.moveToFirst();
       return c.getColProto();
+    } catch (SQLiteException e) {
+      return null;
     } finally {
       if (c != null) {
         c.close();

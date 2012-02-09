@@ -4,7 +4,6 @@
   <string name="wallet_not_found">Google Wallet does not appear to be installed on your device</string>
   <string name="loading">Loading&#8230;</string>
   <string name="error">Error</string>
-  <string name="loading_wallet">Loading data from Google Wallet&#8230;</string>
   <string name="package_google_wallet">com.google.android.apps.walletnfcrel</string>
   <string name="root_not_found">This application requires root to function</string>
   <string name="wallet_db_path">/databases/walletDatastore</string>
@@ -94,4 +93,5 @@
   <string name="error_reporting_preferences">Error Reporting</string>
   <string name="error_reporting_preferences_summary">Control if and what gets sent in error reports</string>
   <string name="unknown_version">Unknown App Version</string>
+  <string name="unknown_error">Sorry, an unknown error has occurred</string>
 </resources>
